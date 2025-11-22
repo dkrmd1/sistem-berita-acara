@@ -1,7 +1,7 @@
 <?php
 
 // File: routes/web.php
-// GANTI SEMUA ISI FILE
+// UPDATED: Fitur Reject dihapus
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -10,7 +10,7 @@ use App\Http\Controllers\NasabahController;
 use App\Http\Controllers\BeritaAcaraController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\NotificationController; // Tambahan baru
+use App\Http\Controllers\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,7 +45,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
     // ============================================
-    // NOTIFICATION ROUTES (Tambahan Baru)
+    // NOTIFICATION ROUTES
     // ============================================
     Route::prefix('notifications')->name('notifications.')->group(function () {
         // Tandai semua sudah dibaca
@@ -101,30 +101,32 @@ Route::middleware('auth')->group(function () {
     // BERITA ACARA ROUTES
     // ============================================
     Route::prefix('berita-acara')->name('berita-acara.')->group(function () {
-        // View & List Routes (Semua user yang login, termasuk admin)
+        
+        // VIEW & LIST ROUTES (Semua user yang login bisa akses)
         Route::get('/', [BeritaAcaraController::class, 'index'])->name('index');
         Route::get('/{id}', [BeritaAcaraController::class, 'show'])->name('show');
         
-        // PDF Actions (Semua user yang login bisa akses PDF)
+        // PDF ROUTES (Semua user yang login bisa akses PDF)
         Route::get('/{id}/view-pdf', [BeritaAcaraController::class, 'viewPDF'])->name('view-pdf');
         Route::get('/{id}/print', [BeritaAcaraController::class, 'printPDF'])->name('print');
         Route::get('/{id}/download', [BeritaAcaraController::class, 'downloadPDF'])->name('download');
         
-        // CS: Create BA (Admin TIDAK BISA buat BA)
+        // CS ONLY: Create Berita Acara
         Route::middleware('role:cs')->group(function () {
             Route::get('/create/pilih-nasabah', [BeritaAcaraController::class, 'create'])->name('create');
             Route::get('/create/form/{nasabahId}', [BeritaAcaraController::class, 'createForm'])->name('create.form');
             Route::post('/store', [BeritaAcaraController::class, 'store'])->name('store');
         });
         
-        // Approver: Approve/Reject (Admin TIDAK BISA approve/reject)
+        // APPROVER ONLY: Approve (REJECT DIHAPUS)
         Route::middleware('role:group_head,direktur_utama,direktur')->group(function () {
             Route::post('/{id}/approve', [BeritaAcaraController::class, 'approve'])->name('approve');
-            Route::post('/{id}/reject', [BeritaAcaraController::class, 'reject'])->name('reject');
+            // Route REJECT dihapus - tidak ada lagi fitur reject
         });
     });
 });
 
+// 404 Fallback
 Route::fallback(function () {
     return view('errors.404');
 });

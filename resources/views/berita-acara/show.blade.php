@@ -183,7 +183,7 @@
                 </div>
             </div>
 
-            <!-- APPROVAL SECTION (Khusus Approver) -->
+            <!-- APPROVAL SECTION (Khusus Approver) - TANPA TOMBOL TOLAK -->
             @if(Auth::user()->isApprover() && $beritaAcara->canBeApprovedBy(Auth::id()))
             <div class="card shadow-lg border-success border-2 mb-4 rounded-4 bg-white">
                 <div class="card-body p-5 text-center">
@@ -195,28 +195,17 @@
                         Anda login sebagai <strong>{{ Auth::user()->jabatan }}</strong>. Silakan tinjau dokumen ini. Jika data sudah sesuai, klik tombol di bawah untuk menyetujui.
                     </p>
                     
-                    <div class="d-flex justify-content-center gap-3">
+                    <div class="d-flex justify-content-center">
                         <button type="button" 
                                 class="btn btn-lg btn-success px-5 py-3 rounded-pill shadow-sm btn-action-approve hover-scale"
                                 data-id="{{ $beritaAcara->id }}"
                                 data-nomor="{{ $beritaAcara->nomor_ba }}">
                             <i class="bi bi-check-circle-fill me-2"></i> Setujui Dokumen
                         </button>
-                        
-                        <button type="button" 
-                                class="btn btn-lg btn-outline-danger px-4 py-3 rounded-pill shadow-sm btn-action-reject hover-scale"
-                                data-id="{{ $beritaAcara->id }}"
-                                data-nomor="{{ $beritaAcara->nomor_ba }}">
-                            <i class="bi bi-x-circle-fill me-2"></i> Tolak
-                        </button>
                     </div>
                     
-                    <!-- Forms Hidden -->
+                    <!-- Form Hidden -->
                     <form id="approve-form-{{ $beritaAcara->id }}" action="{{ route('berita-acara.approve', $beritaAcara->id) }}" method="POST" class="d-none">@csrf</form>
-                    <form id="reject-form-{{ $beritaAcara->id }}" action="{{ route('berita-acara.reject', $beritaAcara->id) }}" method="POST" class="d-none">
-                        @csrf
-                        <input type="hidden" name="notes" id="reject-notes-{{ $beritaAcara->id }}">
-                    </form>
                 </div>
             </div>
             @endif
@@ -328,7 +317,6 @@
     
     .swal2-confirm-btn { background: linear-gradient(135deg, var(--calm-water-blue) 0%, #12466b 100%) !important; border-radius: 50px !important; padding: 12px 32px !important; color:white !important; border:none !important;}
     .swal2-cancel-btn { background: #f8f9fa !important; color: #6c757d !important; border: 1px solid #dee2e6 !important; border-radius: 50px !important; padding: 12px 24px !important; }
-    .swal2-reject-btn { background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%) !important; border-radius: 50px !important; color: white !important; padding: 12px 32px !important; border:none !important;}
 </style>
 @endpush
 
@@ -369,7 +357,7 @@
         confirmButtonText: '<i class="bi bi-person-circle me-2"></i> Ke Profil & Upload',
         cancelButtonText: 'Tutup',
         reverseButtons: true,
-        backdrop: `rgba(220, 53, 69, 0.1)`, // Merah tipis
+        backdrop: `rgba(220, 53, 69, 0.1)`,
         customClass: {
             popup: 'custom-swal-popup shadow-lg border-0 animate__animated animate__fadeInDown',
             confirmButton: 'swal2-confirm-btn',
@@ -383,7 +371,7 @@
     });
     @endif
 
-    // APPROVE LOGIC
+    // APPROVE LOGIC (TANPA REJECT)
     document.querySelectorAll('.btn-action-approve').forEach(button => {
         button.addEventListener('click', function() {
             const id = this.getAttribute('data-id');
@@ -393,8 +381,17 @@
                 icon: 'question',
                 title: 'Setujui Dokumen?',
                 html: `<div class="mb-2">Anda akan menyetujui BA Nomor:</div><div class="fs-4 mb-3 fw-bold text-primary">${nomor}</div>`,
-                showCancelButton: true, confirmButtonText: 'Ya, Setujui', cancelButtonText: 'Batal', reverseButtons: true, backdrop: `rgba(22, 85, 129, 0.4)`,
-                customClass: { popup: 'custom-swal-popup animate__animated animate__zoomIn', confirmButton: 'swal2-confirm-btn', cancelButton: 'swal2-cancel-btn me-2' }, buttonsStyling: false
+                showCancelButton: true, 
+                confirmButtonText: 'Ya, Setujui', 
+                cancelButtonText: 'Batal', 
+                reverseButtons: true, 
+                backdrop: `rgba(22, 85, 129, 0.4)`,
+                customClass: { 
+                    popup: 'custom-swal-popup animate__animated animate__zoomIn', 
+                    confirmButton: 'swal2-confirm-btn', 
+                    cancelButton: 'swal2-cancel-btn me-2' 
+                }, 
+                buttonsStyling: false
             }).then((result) => {
                 if (result.isConfirmed) {
                     showLoading();
@@ -404,39 +401,34 @@
         });
     });
 
-    // REJECT LOGIC
-    document.querySelectorAll('.btn-action-reject').forEach(button => {
-        button.addEventListener('click', function() {
-            const id = this.getAttribute('data-id');
-            const nomor = this.getAttribute('data-nomor');
-            
-            Swal.fire({
-                icon: 'warning',
-                title: 'Tolak Dokumen?',
-                html: `<div class="mb-2">Tolak BA Nomor: <strong>${nomor}</strong></div><textarea id="reject-note" class="form-control" placeholder="Alasan penolakan..."></textarea>`,
-                showCancelButton: true, confirmButtonText: 'Tolak', cancelButtonText: 'Batal', reverseButtons: true, backdrop: `rgba(220, 53, 69, 0.2)`,
-                customClass: { popup: 'custom-swal-popup animate__animated animate__shakeX', confirmButton: 'swal2-reject-btn', cancelButton: 'swal2-cancel-btn me-2' }, buttonsStyling: false,
-                preConfirm: () => {
-                    const note = document.getElementById('reject-note').value;
-                    if (!note) Swal.showValidationMessage('Alasan wajib diisi');
-                    return note;
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    showLoading();
-                    document.getElementById(`reject-notes-${id}`).value = result.value;
-                    document.getElementById(`reject-form-${id}`).submit();
-                }
-            });
-        });
-    });
-
     function showLoading() {
-        Swal.fire({ title: 'Memproses...', html: 'Mohon tunggu sebentar.', timerProgressBar: true, didOpen: () => Swal.showLoading(), backdrop: `rgba(255,255,255,0.9)`, customClass: { popup: 'custom-swal-popup border-0 shadow-lg' }, showConfirmButton: false });
+        Swal.fire({ 
+            title: 'Memproses...', 
+            html: 'Mohon tunggu sebentar.', 
+            timerProgressBar: true, 
+            didOpen: () => Swal.showLoading(), 
+            backdrop: `rgba(255,255,255,0.9)`, 
+            customClass: { popup: 'custom-swal-popup border-0 shadow-lg' }, 
+            showConfirmButton: false 
+        });
     }
 
     @if(session('success'))
-        Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, didOpen: (toast) => { toast.addEventListener('mouseenter', Swal.stopTimer); toast.addEventListener('mouseleave', Swal.resumeTimer); } }).fire({ icon: 'success', title: '{{ session("success") }}', iconColor: '#29AAE2' });
+        Swal.mixin({ 
+            toast: true, 
+            position: 'top-end', 
+            showConfirmButton: false, 
+            timer: 3000, 
+            timerProgressBar: true, 
+            didOpen: (toast) => { 
+                toast.addEventListener('mouseenter', Swal.stopTimer); 
+                toast.addEventListener('mouseleave', Swal.resumeTimer); 
+            } 
+        }).fire({ 
+            icon: 'success', 
+            title: '{{ session("success") }}', 
+            iconColor: '#29AAE2' 
+        });
     @endif
 </script>
 @endpush

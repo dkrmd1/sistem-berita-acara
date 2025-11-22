@@ -262,18 +262,6 @@
                                             @csrf
                                         </form>
                                     @endif
-
-                                    <!-- REJECT BUTTON (Hanya untuk Approver) -->
-                                    @if(Auth::user()->isApprover() && $ba->canBeApprovedBy(Auth::id()))
-                                        <button type="button" 
-                                                class="btn btn-sm btn-danger text-white btn-reject"
-                                                data-id="{{ $ba->id }}"
-                                                data-nomor="{{ $ba->nomor_ba }}"
-                                                data-bs-toggle="tooltip"
-                                                title="Reject">
-                                            <i class="bi bi-x-lg"></i>
-                                        </button>
-                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -303,12 +291,6 @@
         </div>
     </div>
 </div>
-
-<!-- Form Reject Hidden (Global) -->
-<form id="reject-form-global" action="" method="POST" class="d-none">
-    @csrf
-    <input type="hidden" name="notes" id="reject-notes-global">
-</form>
 
 @endsection
 
@@ -363,12 +345,6 @@
     }
     .swal2-confirm-btn:hover { transform: translateY(-2px); }
 
-    .swal2-reject-btn {
-        background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%) !important;
-        border-radius: 50px !important; font-weight: 600 !important; padding: 12px 32px !important;
-        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3) !important; color: white !important;
-    }
-
     .swal2-cancel-btn {
         background: #f8f9fa !important; color: #6c757d !important; border: 1px solid #dee2e6 !important;
         border-radius: 50px !important; font-weight: 600 !important; padding: 12px 24px !important;
@@ -415,52 +391,6 @@
                 if (result.isConfirmed) {
                     showLoading();
                     document.getElementById(`approve-form-${id}`).submit();
-                }
-            });
-        });
-    });
-
-    // === LOGIC REJECT (POPUP KEREN) ===
-    document.querySelectorAll('.btn-reject').forEach(button => {
-        button.addEventListener('click', function() {
-            const id = this.getAttribute('data-id');
-            const nomor = this.getAttribute('data-nomor');
-            
-            Swal.fire({
-                icon: 'warning',
-                title: 'Tolak Dokumen?',
-                html: `
-                    <div class="mb-2">Anda akan menolak BA Nomor:</div>
-                    <div class="fs-5 mb-3"><span class="highlight-ba text-danger bg-danger-subtle">${nomor}</span></div>
-                    <div class="mb-3 text-start px-4">
-                        <label class="form-label small fw-bold text-muted text-uppercase">Alasan Penolakan</label>
-                        <textarea id="swal-input-notes" class="form-control bg-light" rows="3" placeholder="Contoh: Data nasabah tidak sesuai KTP..."></textarea>
-                    </div>
-                `,
-                showCancelButton: true,
-                confirmButtonText: 'Tolak Dokumen',
-                cancelButtonText: 'Batal',
-                reverseButtons: true,
-                backdrop: `rgba(220, 53, 69, 0.2)`,
-                customClass: {
-                    popup: 'custom-swal-popup animate__animated animate__shakeX',
-                    title: 'custom-swal-title text-danger',
-                    confirmButton: 'btn swal2-reject-btn',
-                    cancelButton: 'swal2-cancel-btn me-2'
-                },
-                buttonsStyling: false,
-                preConfirm: () => {
-                    const notes = document.getElementById('swal-input-notes').value;
-                    if (!notes) { Swal.showValidationMessage('Harap isi alasan penolakan!'); }
-                    return notes;
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    showLoading();
-                    const form = document.getElementById('reject-form-global');
-                    form.action = `/berita-acara/${id}/reject`; 
-                    document.getElementById('reject-notes-global').value = result.value;
-                    form.submit();
                 }
             });
         });
