@@ -1,7 +1,7 @@
 <?php
 
 // File: routes/web.php
-// UPDATED: Fitur Reject dihapus
+// UPDATED: Ditambahkan Fitur Backup & Restore dengan Upload
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -11,6 +11,7 @@ use App\Http\Controllers\BeritaAcaraController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\BackupController;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,9 +49,7 @@ Route::middleware('auth')->group(function () {
     // NOTIFICATION ROUTES
     // ============================================
     Route::prefix('notifications')->name('notifications.')->group(function () {
-        // Tandai semua sudah dibaca
         Route::get('/mark-all-read', [NotificationController::class, 'markAllRead'])->name('markAllRead');
-        // Tandai satu notifikasi dibaca lalu redirect
         Route::get('/{id}/read', [NotificationController::class, 'markAsRead'])->name('read');
     });
 
@@ -78,6 +77,18 @@ Route::middleware('auth')->group(function () {
         Route::patch('/{id}/reset-password', [UserController::class, 'resetPassword'])->name('reset-password');
         Route::patch('/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('toggle-status');
         Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
+    });
+    
+    // ============================================
+    // BACKUP & RESTORE ROUTES (Hanya Admin)
+    // ============================================
+    Route::prefix('backup')->name('backup.')->middleware('role:admin')->group(function () {
+        Route::get('/', [BackupController::class, 'index'])->name('index');
+        Route::post('/create', [BackupController::class, 'createBackup'])->name('create');
+        Route::post('/upload', [BackupController::class, 'uploadBackup'])->name('upload');
+        Route::get('/download/{filename}', [BackupController::class, 'downloadBackup'])->name('download');
+        Route::post('/restore/{filename}', [BackupController::class, 'restore'])->name('restore');
+        Route::delete('/delete/{filename}', [BackupController::class, 'deleteBackup'])->name('delete');
     });
     
     // ============================================
@@ -118,10 +129,9 @@ Route::middleware('auth')->group(function () {
             Route::post('/store', [BeritaAcaraController::class, 'store'])->name('store');
         });
         
-        // APPROVER ONLY: Approve (REJECT DIHAPUS)
+        // APPROVER ONLY: Approve
         Route::middleware('role:group_head,direktur_utama,direktur')->group(function () {
             Route::post('/{id}/approve', [BeritaAcaraController::class, 'approve'])->name('approve');
-            // Route REJECT dihapus - tidak ada lagi fitur reject
         });
     });
 });

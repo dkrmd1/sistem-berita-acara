@@ -2,7 +2,6 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <!-- Update: Menghapus user-scalable=no agar lebih accessible, tapi tetap rapi -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Sistem Berita Acara') - bjb Sekuritas</title>
@@ -33,7 +32,7 @@
         body {
             font-family: 'Myriad Pro', 'Segoe UI', Tahoma, sans-serif;
             background: #f5f7fa;
-            overflow-x: hidden; /* Mencegah scroll horizontal */
+            overflow-x: hidden;
         }
 
         /* ===================================
@@ -43,7 +42,7 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255, 255, 255, 0.95);
             z-index: 9999;
-            display: none; /* Default hidden, dikontrol JS */
+            display: none;
             justify-content: center; align-items: center; flex-direction: column;
             backdrop-filter: blur(4px);
             transition: opacity 0.3s ease;
@@ -190,7 +189,6 @@
     
     <!-- LOADING SCREEN (LOGO BJB) -->
     <div id="pageLoader">
-        <!-- Pastikan file logo ada di: public/images/bjbsekuritas.png -->
         <img src="{{ asset('images/bjbsekuritas.png') }}" alt="Loading..." class="loader-logo" onerror="this.style.display='none'">
         <div class="mt-3 text-muted small fw-bold">Memuat Halaman...</div>
     </div>
@@ -215,7 +213,6 @@
                     <a class="nav-link text-white position-relative" href="#" role="button" data-bs-toggle="dropdown">
                         <i class="bi bi-bell-fill fs-5"></i>
                         @php 
-                            // Optimasi: Hanya hitung yang belum dibaca
                             $unreadCount = Auth::user()->unreadNotifications()->count(); 
                         @endphp
                         @if($unreadCount > 0)
@@ -232,7 +229,6 @@
                             @endif
                         </li>
                         <div class="notification-list">
-                            {{-- Optimasi: Mengambil hanya 10 notifikasi terakhir agar loading tidak berat --}}
                             @forelse(Auth::user()->notifications()->take(10)->get() as $notification)
                                 <li>
                                     <a class="dropdown-item d-flex gap-3 py-3 border-bottom {{ $notification->read_at ? '' : 'bg-blue-subtle' }}" 
@@ -327,7 +323,7 @@
             <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
                 <i class="bi bi-speedometer2"></i> Dashboard
             </a>
-            <a class="nav-link {{ request()->routeIs('nasabah.*') ? 'active' : '' }}" href="{{ route('nasabah.index') }}">
+            <a class="nav-link {{ request()->routeIs('nasabah.*') && !request()->routeIs('nasabah.import.*') ? 'active' : '' }}" href="{{ route('nasabah.index') }}">
                 <i class="bi bi-people-fill"></i> Data Nasabah
             </a>
             @if(Auth::user()->isCS())
@@ -335,6 +331,7 @@
                 <i class="bi bi-cloud-upload-fill"></i> Import Nasabah
             </a>
             @endif
+            
             <div class="nav-section-title">Berita Acara</div>
             <a class="nav-link {{ request()->routeIs('berita-acara.index') ? 'active' : '' }}" href="{{ route('berita-acara.index') }}">
                 <i class="bi bi-file-earmark-text-fill"></i> Daftar BA
@@ -344,10 +341,14 @@
                 <i class="bi bi-plus-circle-fill"></i> Buat BA Baru
             </a>
             @endif
+            
             @if(Auth::user()->isAdmin())
             <div class="nav-section-title">Pengaturan</div>
             <a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">
                 <i class="bi bi-person-fill-gear"></i> Kelola User
+            </a>
+            <a class="nav-link {{ request()->routeIs('backup.*') ? 'active' : '' }}" href="{{ route('backup.index') }}">
+                <i class="bi bi-database-fill-gear"></i> Backup & Restore
             </a>
             @endif
         </nav>
@@ -389,24 +390,21 @@
             const toggleBtn = document.getElementById('sidebarToggle');
             const pageLoader = document.getElementById('pageLoader');
 
-            // 1. Loading Animation (PERBAIKAN PENTING)
-            // Selector ini sekarang MENGABAIKAN link download, target_blank, link hash, dan dropdown
-            // Agar loading screen tidak stuck saat download file
+            // Loading Animation - mengabaikan link download dan dropdown
             const links = document.querySelectorAll('a[href]:not([href^="#"]):not([target="_blank"]):not(.dropdown-toggle):not([href*="download"]):not([id="downloadBtn"])');
             
             links.forEach(link => {
                 link.addEventListener('click', function(e) {
-                    if (e.ctrlKey || e.metaKey) return; // Biarkan open in new tab
+                    if (e.ctrlKey || e.metaKey) return;
                     if (pageLoader) pageLoader.style.display = 'flex';
                 });
             });
 
-            // Sembunyikan loader saat user menekan tombol back browser (history navigation)
             window.addEventListener('pageshow', function(event) {
                 if (pageLoader) pageLoader.style.display = 'none';
             });
 
-            // 2. Sidebar Toggle Logic
+            // Sidebar Toggle Logic
             if(toggleBtn) {
                 toggleBtn.addEventListener('click', function() {
                     sidebar.classList.toggle('show');
@@ -419,7 +417,7 @@
                     overlay.classList.remove('show');
                 });
             }
-            // Tutup sidebar otomatis di mobile saat klik menu
+            
             document.querySelectorAll('.sidebar-nav .nav-link').forEach(link => {
                 link.addEventListener('click', () => {
                     if (window.innerWidth <= 991) {
