@@ -1,36 +1,25 @@
 <?php
 
-// File: app/Http/Controllers/AuthController.php
-// BUAT FILE BARU
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\LoginLog; // <--- PENTING: Import Model ini
+use Carbon\Carbon;       // <--- Import Carbon
 
 class AuthController extends Controller
 {
-    /**
-     * Tampilkan halaman login
-     */
     public function showLogin()
     {
-        // Kalau sudah login, redirect ke dashboard
         if (Auth::check()) {
             return redirect()->route('dashboard');
         }
-        
         return view('auth.login');
     }
 
-    /**
-     * Proses login
-     */
     public function login(Request $request)
     {
-        // Validasi input
         $request->validate([
             'email' => 'required|email',
             'password' => 'required',
@@ -40,29 +29,32 @@ class AuthController extends Controller
             'password.required' => 'Password harus diisi',
         ]);
 
-        // Ambil credentials
         $credentials = $request->only('email', 'password');
         
-        // Cek apakah user aktif
+        // Cek user exists & active
         $user = User::where('email', $request->email)->first();
-        
         if (!$user) {
-            return back()->withErrors([
-                'email' => 'Email tidak terdaftar.',
-            ])->withInput();
+            return back()->withErrors(['email' => 'Email tidak terdaftar.'])->withInput();
         }
-        
         if (!$user->is_active) {
-            return back()->withErrors([
-                'email' => 'Akun Anda tidak aktif. Hubungi administrator.',
-            ])->withInput();
+            return back()->withErrors(['email' => 'Akun Anda tidak aktif. Hubungi administrator.'])->withInput();
         }
 
         // Attempt login
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
 
-            // Redirect berdasarkan role
+            // ====================================================
+            // PERBAIKAN: SIMPAN LOG LOGIN KE DATABASE DI SINI
+            // ====================================================
+            LoginLog::create([
+                'user_id' => Auth::id(),
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->header('User-Agent'),
+                'login_at' => Carbon::now(),
+            ]);
+            // ====================================================
+
             return redirect()->intended(route('dashboard'))
                 ->with('success', 'Selamat datang, ' . Auth::user()->name . '!');
         }
@@ -72,13 +64,9 @@ class AuthController extends Controller
         ])->withInput();
     }
 
-    /**
-     * Logout
-     */
     public function logout(Request $request)
     {
         Auth::logout();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

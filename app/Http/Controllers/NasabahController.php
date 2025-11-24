@@ -71,30 +71,24 @@ class NasabahController extends Controller
         $sheet->getRowDimension(1)->setRowHeight(30);
         
         // === FORMAT KOLOM SEBAGAI TEXT (PENTING!) ===
-        // Kolom B (KTP) & C (NPWP) diformat sebagai TEXT agar tidak jadi scientific notation
         $sheet->getStyle('B2:B1000')->getNumberFormat()->setFormatCode('@'); // @ = TEXT
         $sheet->getStyle('C2:C1000')->getNumberFormat()->setFormatCode('@'); // @ = TEXT
-        
-        // Kolom D (Tanggal Lahir) juga diformat sebagai TEXT untuk copy-paste mudah
         $sheet->getStyle('D2:D1000')->getNumberFormat()->setFormatCode('@'); // @ = TEXT
         
-        // === DATA CONTOH (SEMUA SEBAGAI TEXT) ===
+        // === DATA CONTOH ===
         $exampleData = [
             ['RUDI RUCHBANSAH', '3203112509720000', '273483404429000', '25-Sep-72', 'INDONESIA'],
             ['BUDI SANTOSO', '3201011234560001', '123456789012000', '15-Jan-85', 'INDONESIA'],
             ['SITI NURHALIZA', '3301025678900002', '987654321098000', '10-Mar-90', 'INDONESIA'],
         ];
         
-        // Insert data dengan FORCE TEXT untuk SEMUA KOLOM
         $row = 2;
         foreach ($exampleData as $data) {
-            // SEMUA kolom di-force sebagai TEXT
-            $sheet->setCellValueExplicit('A' . $row, $data[0], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING); // Nama
-            $sheet->setCellValueExplicit('B' . $row, $data[1], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING); // KTP
-            $sheet->setCellValueExplicit('C' . $row, $data[2], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING); // NPWP
-            $sheet->setCellValueExplicit('D' . $row, $data[3], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING); // Tanggal
-            $sheet->setCellValueExplicit('E' . $row, $data[4], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING); // Negara
-            
+            $sheet->setCellValueExplicit('A' . $row, $data[0], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValueExplicit('B' . $row, $data[1], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValueExplicit('C' . $row, $data[2], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValueExplicit('D' . $row, $data[3], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValueExplicit('E' . $row, $data[4], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
             $row++;
         }
         
@@ -105,14 +99,12 @@ class NasabahController extends Controller
         ];
         $sheet->getStyle('A2:E4')->applyFromArray($bodyStyle);
         
-        // === WIDTH KOLOM ===
-        $sheet->getColumnDimension('A')->setWidth(25); // Nama
-        $sheet->getColumnDimension('B')->setWidth(20); // KTP
-        $sheet->getColumnDimension('C')->setWidth(20); // NPWP
-        $sheet->getColumnDimension('D')->setWidth(15); // Tanggal Lahir
-        $sheet->getColumnDimension('E')->setWidth(15); // Negara
+        $sheet->getColumnDimension('A')->setWidth(25);
+        $sheet->getColumnDimension('B')->setWidth(20);
+        $sheet->getColumnDimension('C')->setWidth(20);
+        $sheet->getColumnDimension('D')->setWidth(15);
+        $sheet->getColumnDimension('E')->setWidth(15);
         
-        // === INSTRUKSI DI BAWAH ===
         $sheet->setCellValue('A6', '📌 CARA PENGGUNAAN:');
         $sheet->setCellValue('A7', '1. Hapus 3 baris contoh di atas (Baris 2-4)');
         $sheet->setCellValue('A8', '2. Copy-Paste data Anda LANGSUNG di baris 2 dan seterusnya');
@@ -130,10 +122,8 @@ class NasabahController extends Controller
         $sheet->mergeCells('A11:E11');
         $sheet->mergeCells('A12:E12');
         
-        // === FREEZE HEADER ===
         $sheet->freezePane('A2');
         
-        // === SAVE & DOWNLOAD ===
         $writer = new Xlsx($spreadsheet);
         $filename = 'Template_Import_Nasabah_' . date('Y-m-d_His') . '.xlsx';
         
@@ -219,7 +209,6 @@ class NasabahController extends Controller
                         continue;
                     }
 
-                    // Cek Duplikat Internal
                     if (in_array($ktp, $processedKTPs)) {
                         $skipCount++;
                         $errors[] = "Baris {$rowNumber} ({$nama}): SKIP - KTP ganda di file Excel.";
@@ -231,7 +220,6 @@ class NasabahController extends Controller
                         continue;
                     }
 
-                    // Cek Duplikat Database
                     $queryCheck = Nasabah::where('ktp', $ktp);
                     if (!empty($npwp)) $queryCheck->orWhere('npwp', $npwp);
                     if (!empty($nama)) $queryCheck->orWhere('nama', $nama);
@@ -252,23 +240,17 @@ class NasabahController extends Controller
                         continue;
                     }
 
-                    // Parse Tanggal Lahir
                     $tanggalLahir = null;
                     if ($tanggalLahirRaw) {
                         try {
                             if (is_numeric($tanggalLahirRaw)) {
-                                // Format Excel Serial Number
                                 $tanggalLahir = Date::excelToDateTimeObject($tanggalLahirRaw)->format('Y-m-d');
                             } else {
-                                // Format Text - Support bahasa Indonesia
                                 $tanggalLahirRaw = trim($tanggalLahirRaw);
-                                
-                                // Konversi bulan Indonesia ke Inggris
                                 $bulanIndo = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Oct', 'Nov', 'Dec', 'Des'];
                                 $bulanEng = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Dec'];
                                 $tanggalLahirRaw = str_replace($bulanIndo, $bulanEng, $tanggalLahirRaw);
                                 
-                                // Try multiple formats
                                 $possibleFormats = ['d-M-y', 'd-M-Y', 'd/m/Y', 'Y-m-d', 'd-m-Y', 'd/M/Y', 'd/M/y'];
                                 foreach ($possibleFormats as $fmt) {
                                     try {
@@ -279,14 +261,11 @@ class NasabahController extends Controller
                                         }
                                     } catch (\Exception $e) { continue; }
                                 }
-                                
-                                // Last attempt: Carbon auto-parse
                                 if (!$tanggalLahir) {
                                     $tanggalLahir = Carbon::parse($tanggalLahirRaw)->format('Y-m-d');
                                 }
                             }
                         } catch (\Exception $e) {
-                            // Jika gagal parse, biarkan null (jika nullable)
                             $tanggalLahir = null;
                         }
                     }
@@ -329,6 +308,55 @@ class NasabahController extends Controller
                 ->with('error', 'Gagal membaca file: ' . $e->getMessage());
         }
     }
+
+    // =========================================================
+    // TAMBAHAN: FITUR EDIT & UPDATE (YANG HILANG SEBELUMNYA)
+    // =========================================================
+
+    public function edit($id)
+    {
+        $nasabah = Nasabah::findOrFail($id);
+        return view('nasabah.edit', compact('nasabah'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $nasabah = Nasabah::findOrFail($id);
+
+        // Validasi Update (Abaikan unique jika ID sama)
+        $validator = Validator::make($request->all(), [
+            'nama' => 'required|string|max:255',
+            'ktp' => 'required|digits:16|unique:nasabahs,ktp,' . $nasabah->id,
+            'npwp' => 'nullable|digits:15|unique:nasabahs,npwp,' . $nasabah->id,
+            'tanggal_lahir' => 'required|date',
+            'negara' => 'required|string|max:100',
+        ], [
+            'ktp.unique' => 'Nomor KTP ini sudah terdaftar.',
+            'npwp.unique' => 'Nomor NPWP ini sudah terdaftar.',
+            'ktp.digits' => 'KTP harus berjumlah 16 digit.',
+            'npwp.digits' => 'NPWP harus berjumlah 15 digit.',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        try {
+            $nasabah->update([
+                'nama' => strtoupper($request->nama),
+                'ktp' => $request->ktp,
+                'npwp' => $request->npwp,
+                'tanggal_lahir' => $request->tanggal_lahir,
+                'negara' => strtoupper($request->negara),
+            ]);
+
+            return redirect()->route('nasabah.index')->with('success', 'Data Nasabah berhasil diperbarui!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal memperbarui data: ' . $e->getMessage())->withInput();
+        }
+    }
+
+    // =========================================================
 
     public function destroy($id)
     {

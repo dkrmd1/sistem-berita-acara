@@ -84,9 +84,18 @@
         
         .navbar-brand {
             font-weight: 700; font-size: 1.2rem; color: #fff !important;
-            display: flex; align-items: center; gap: 0.5rem;
+            display: flex; align-items: center; gap: 0.8rem;
         }
-        .navbar-brand i { color: var(--sincere-yellow); font-size: 1.4rem; }
+        
+        /* Style khusus untuk logo di navbar */
+        .navbar-logo {
+            height: 45px;
+            width: auto;
+            background-color: white; /* Supaya logo JPG terlihat jelas di background biru */
+            padding: 2px 5px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
 
         .brand-strip {
             height: 6px; width: 100%;
@@ -187,9 +196,9 @@
 </head>
 <body>
     
-    <!-- LOADING SCREEN (LOGO BJB) -->
+    <!-- LOADING SCREEN -->
     <div id="pageLoader">
-        <img src="{{ asset('images/bjbsekuritas.png') }}" alt="Loading..." class="loader-logo" onerror="this.style.display='none'">
+        <img src="{{ asset('images/bjbsekuritas.jpg') }}" alt="Loading..." class="loader-logo" onerror="this.style.display='none'">
         <div class="mt-3 text-muted small fw-bold">Memuat Halaman...</div>
     </div>
 
@@ -200,10 +209,13 @@
                 <i class="bi bi-list"></i>
             </button>
             
+            <!-- BRAND LOGO AREA -->
             <a class="navbar-brand me-auto" href="{{ route('dashboard') }}">
-                <i class="bi bi-file-earmark-text-fill"></i>
-                <span class="d-none d-sm-inline">Sistem Berita Acara</span>
-                <span class="d-sm-none">e-BA</span>
+                <img src="{{ asset('images/bjbsekuritas.jpg') }}" alt="bjb Sekuritas" class="navbar-logo">
+                <div class="d-flex flex-column justify-content-center" style="line-height: 1;">
+                    <span class="d-none d-sm-inline" style="font-size: 1rem;">Sistem Berita Acara</span>
+                    <small class="d-sm-none" style="font-size: 0.8rem;">e-BA System</small>
+                </div>
             </a>
             
             <div class="d-flex align-items-center gap-3">
@@ -342,13 +354,20 @@
             </a>
             @endif
             
+            <!-- UPDATE: MENU ADMIN & SETTINGS -->
             @if(Auth::user()->isAdmin())
             <div class="nav-section-title">Pengaturan</div>
             <a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}">
                 <i class="bi bi-person-fill-gear"></i> Kelola User
             </a>
+            <a class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}" href="{{ route('settings.index') }}">
+                <i class="bi bi-sliders"></i> Konfigurasi Sistem
+            </a>
             <a class="nav-link {{ request()->routeIs('backup.*') ? 'active' : '' }}" href="{{ route('backup.index') }}">
                 <i class="bi bi-database-fill-gear"></i> Backup & Restore
+            </a>
+            <a class="nav-link {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}" href="{{ route('activity-logs.index') }}">
+                <i class="bi bi-clock-history"></i> Riwayat Login
             </a>
             @endif
         </nav>

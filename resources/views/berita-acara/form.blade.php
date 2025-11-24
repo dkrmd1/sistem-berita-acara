@@ -3,41 +3,52 @@
 @section('title', 'Isi Form Berita Acara')
 
 @section('content')
-<div class="container-fluid px-4">
-    <!-- Header & Progress Tracker (SAMA SEPERTI SEBELUMNYA) -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-5 gap-3">
-        <div>
-            <h2 class="fw-bold text-company mb-1">
-                <i class="bi bi-file-earmark-richtext-fill me-2"></i>Form Berita Acara
-            </h2>
-            <p class="text-muted mb-0">Lengkapi formulir pengecekan data nasabah di bawah ini.</p>
+<div class="container-fluid px-4 py-4">
+    
+    <!-- 1. HEADER / BAGIAN ATAS (Disamakan dengan Referensi Gambar) -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+        <div class="card-body p-4 d-flex align-items-center">
+            <!-- Icon Bulat (Kiri) -->
+            <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-3 flex-shrink-0" 
+                 style="width: 64px; height: 64px;">
+                <i class="bi bi-file-earmark-text-fill fs-2"></i>
+            </div>
+            
+            <!-- Teks Judul & Deskripsi (Tengah) -->
+            <div class="flex-grow-1">
+                <h4 class="fw-bold text-dark mb-1" style="color: #1e3a8a;">Form Berita Acara</h4>
+                <p class="text-muted mb-0">Lengkapi formulir pengajuan dan persetujuan dokumen nasabah.</p>
+            </div>
+
+            <!-- Tombol Kembali (Kanan) -->
+            <a href="{{ route('berita-acara.create') }}" class="btn btn-light border rounded-pill px-4 fw-bold text-secondary hover-scale ms-3 d-none d-md-block">
+                <i class="bi bi-arrow-left me-2"></i> Kembali
+            </a>
         </div>
-        <a href="{{ route('berita-acara.create') }}" class="btn btn-light border rounded-pill px-4 shadow-sm">
-            <i class="bi bi-arrow-left me-2"></i> Kembali
-        </a>
     </div>
 
-    <!-- Progress Tracker -->
+    <!-- Progress Tracker (Opsional - Bisa dihapus jika ingin lebih simple) -->
     <div class="row justify-content-center mb-5">
         <div class="col-12 col-md-10 col-lg-8">
             <div class="position-relative my-2">
-                <div class="progress" style="height: 4px; background-color: #e9ecef;">
-                    <div class="progress-bar bg-gradient-company" role="progressbar" style="width: 50%;"></div>
+                <div class="progress rounded-pill" style="height: 6px; background-color: #e9ecef;">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: 50%;"></div>
                 </div>
-                <div class="position-absolute top-0 start-0 translate-middle btn btn-company rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 3rem; height:3rem;">
-                    <i class="bi bi-check-lg fs-4"></i>
+                <!-- Step 1 -->
+                <div class="position-absolute top-0 start-0 translate-middle">
+                    <div class="step-circle bg-primary text-white shadow-sm"><i class="bi bi-check-lg"></i></div>
+                    <div class="step-label text-muted fw-bold">Pilih Nasabah</div>
                 </div>
-                <div class="position-absolute top-0 start-50 translate-middle btn btn-company rounded-circle shadow-lg d-flex align-items-center justify-content-center" style="width: 3rem; height:3rem; border: 4px solid #fff;">
-                    <span class="fw-bold fs-5">2</span>
+                <!-- Step 2 -->
+                <div class="position-absolute top-0 start-50 translate-middle">
+                    <div class="step-circle bg-primary text-white shadow-lg ring-effect"><span class="fw-bold">2</span></div>
+                    <div class="step-label text-primary fw-bold mt-2">Pengecekan</div>
                 </div>
-                <div class="position-absolute top-0 start-100 translate-middle btn btn-light border rounded-circle d-flex align-items-center justify-content-center" style="width: 3rem; height:3rem;">
-                    <span class="fw-bold fs-5 text-muted">3</span>
+                <!-- Step 3 -->
+                <div class="position-absolute top-0 start-100 translate-middle">
+                    <div class="step-circle bg-white border text-muted"><span class="small">3</span></div>
+                    <div class="step-label text-muted fw-bold">Selesai</div>
                 </div>
-            </div>
-            <div class="d-flex justify-content-between mt-3 px-1">
-                <span class="small fw-bold text-muted">Pilih Nasabah</span>
-                <span class="small fw-bold text-company">Isi Form & Approver</span>
-                <span class="small fw-bold text-muted">Selesai</span>
             </div>
         </div>
     </div>
@@ -45,58 +56,92 @@
     <div class="row g-4">
         <!-- KOLOM KIRI: FORM -->
         <div class="col-12 col-lg-8">
-            <div class="card shadow-lg border-0 rounded-4">
-                <div class="card-header bg-gradient-company text-white py-3 rounded-top-4">
-                    <h6 class="mb-0 fw-bold"><i class="bi bi-pencil-square me-2"></i> Data & Pengecekan</h6>
-                </div>
-                
-                <div class="card-body p-4 p-md-5">
-                    <!-- Info Nasabah -->
-                    <div class="alert bg-light border-0 border-start border-5 border-primary rounded-3 mb-5 shadow-sm">
-                        <div class="row g-3">
-                            <div class="col-12 border-bottom pb-2 mb-2">
-                                <small class="text-uppercase text-muted fw-bold d-block mb-1">Nama Nasabah</small>
-                                <div class="fs-4 fw-bold text-dark d-flex align-items-center">
-                                    <i class="bi bi-person-circle text-primary me-2"></i> {{ $nasabah->nama }}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <small class="text-uppercase text-muted fw-bold d-block mb-1">No. KTP</small>
-                                <div class="fs-5 font-monospace text-dark d-flex align-items-center">
-                                    <i class="bi bi-card-heading text-primary me-2"></i> {{ $nasabah->getKtpFormatted() }}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <small class="text-uppercase text-muted fw-bold d-block mb-1">No. NPWP</small>
-                                <div class="fs-5 font-monospace text-dark d-flex align-items-center">
-                                    <i class="bi bi-card-list text-primary me-2"></i> {{ $nasabah->getNpwpFormatted() }}
-                                </div>
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <!-- Data Nasabah Header -->
+                <div class="bg-white p-4 border-bottom">
+                    <div class="d-flex align-items-center p-3 rounded-4 bg-light-subtle border">
+                        <div class="avatar-circle bg-primary text-white me-3 rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 50px; height: 50px; font-size: 1.2rem;">
+                            {{ strtoupper(substr($nasabah->nama, 0, 1)) }}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="fw-bold text-dark mb-1">{{ $nasabah->nama }}</h5>
+                            <div class="d-flex flex-wrap gap-3 text-muted small">
+                                <span><i class="bi bi-card-heading me-1"></i> {{ $nasabah->getKtpFormatted() }}</span>
+                                <span class="vr mx-1"></span>
+                                <span><i class="bi bi-card-list me-1"></i> {{ $nasabah->getNpwpFormatted() }}</span>
                             </div>
                         </div>
                     </div>
-
+                </div>
+                
+                <div class="card-body p-4 p-md-5 bg-white">
                     <form action="{{ route('berita-acara.store') }}" method="POST" id="baForm">
                         @csrf
                         <input type="hidden" name="nasabah_id" value="{{ $nasabah->id }}">
 
-                        <!-- Detail Dokumen -->
+                        <!-- SECTION 1: Detail Dokumen -->
                         <div class="mb-5">
-                            <h6 class="text-company fw-bold mb-3 pb-2 border-bottom">
-                                <span class="bg-white pe-3"><i class="bi bi-calendar-week me-2"></i> Detail Dokumen</span>
+                            <h6 class="text-uppercase fw-bold text-secondary small mb-3 ls-1">
+                                <i class="bi bi-sliders me-1"></i> Konfigurasi Dokumen
                             </h6>
+
+                            <!-- PANEL NOMOR BA -->
+                            <div class="card border-0 bg-light rounded-4 mb-4 overflow-hidden">
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <div>
+                                            <h6 class="fw-bold text-primary mb-1">Nomor Berita Acara</h6>
+                                            <p class="small text-muted mb-0">Atur penomoran dokumen.</p>
+                                        </div>
+                                        @if(isset($isAutoEnabled) && $isAutoEnabled)
+                                        <div class="form-check form-switch transform-scale-12">
+                                            <input class="form-check-input cursor-pointer" type="checkbox" role="switch" id="toggleManualBA" name="use_manual_ba" value="1" {{ old('use_manual_ba') ? 'checked' : '' }}>
+                                        </div>
+                                        @endif
+                                    </div>
+
+                                    <hr class="text-muted opacity-25 my-3">
+
+                                    @if(isset($isAutoEnabled) && $isAutoEnabled)
+                                        <!-- Input Manual -->
+                                        <div id="manualBAInputWrapper" style="display: none;" class="animate__animated animate__fadeIn">
+                                            <div class="form-floating">
+                                                <input type="text" name="manual_nomor_ba" id="manual_nomor_ba" 
+                                                       class="form-control fw-bold font-monospace text-uppercase text-primary border-primary" 
+                                                       placeholder="Contoh: BA/2025/..."
+                                                       value="{{ old('manual_nomor_ba') }}">
+                                                <label for="manual_nomor_ba">Nomor BA (Opsional)</label>
+                                            </div>
+                                        </div>
+                                        <!-- Pesan Auto -->
+                                        <div id="autoBAMsg" class="d-flex align-items-center mt-1 animate__animated animate__fadeIn">
+                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill">
+                                                <i class="bi bi-robot me-2"></i> Mode Otomatis
+                                            </span>
+                                            <span class="ms-2 small text-muted fst-italic">Format: BA/YYYY/MM/XXXX</span>
+                                        </div>
+                                    @else
+                                        <div class="form-floating">
+                                            <input type="text" name="manual_nomor_ba" id="manual_nomor_ba_forced" 
+                                                   class="form-control fw-bold font-monospace text-uppercase border-warning" 
+                                                   placeholder="Isi Nomor..."
+                                                   value="{{ old('manual_nomor_ba') }}">
+                                            <label for="manual_nomor_ba_forced">Nomor BA (Opsional)</label>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+
                             <div class="row g-4">
                                 <div class="col-md-6">
-                                    <label class="form-label small fw-bold text-muted">TANGGAL BERITA ACARA <span class="text-danger">*</span></label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-white text-primary border-end-0"><i class="bi bi-calendar-event"></i></span>
-                                        <input type="date" name="tanggal_ba" class="form-control border-start-0 ps-0" value="{{ old('tanggal_ba', date('Y-m-d')) }}" required>
+                                    <div class="form-floating">
+                                        <input type="date" name="tanggal_ba" class="form-control bg-light border-0 fw-bold" id="tanggal_ba" value="{{ old('tanggal_ba', date('Y-m-d')) }}" required>
+                                        <label for="tanggal_ba" class="fw-bold text-secondary">Tanggal Dokumen</label>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label small fw-bold text-muted">APPROVER (PEJABAT) <span class="text-danger">*</span></label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-white text-primary border-end-0"><i class="bi bi-person-check-fill"></i></span>
-                                        <select name="approver_id" class="form-select border-start-0 ps-0" required>
+                                    <div class="form-floating">
+                                        <select name="approver_id" class="form-select bg-light border-0 fw-bold" id="approver_id" required>
                                             <option value="">-- Pilih Pejabat --</option>
                                             @foreach($approvers as $approver)
                                             <option value="{{ $approver->id }}" {{ old('approver_id') == $approver->id ? 'selected' : '' }}>
@@ -104,78 +149,79 @@
                                             </option>
                                             @endforeach
                                         </select>
+                                        <label for="approver_id" class="fw-bold text-secondary">Pejabat Approver</label>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Hasil Pengecekan -->
-                        <div class="mb-4">
-                            <h6 class="text-company fw-bold mb-4 pb-2 border-bottom">
-                                <span class="bg-white pe-3"><i class="bi bi-shield-check me-2"></i> Hasil Pengecekan</span>
+                        <!-- SECTION 2: Hasil Pengecekan -->
+                        <div class="mb-5">
+                            <h6 class="text-uppercase fw-bold text-secondary small mb-3 ls-1">
+                                <i class="bi bi-shield-check me-1"></i> Hasil Validasi
                             </h6>
 
-                            <!-- Watchlist -->
-                            <div class="mb-4 p-3 rounded-3 bg-light border border-dashed">
-                                <label class="form-label fw-bold text-dark mb-3 d-block">
-                                    1. Pengecekan Database Watch List (APU PPT) <span class="text-danger">*</span>
-                                </label>
+                            <!-- Watchlist Card -->
+                            <div class="mb-4">
+                                <label class="fw-bold text-dark mb-2 d-block">1. Database Watch List (APU PPT) <span class="text-danger">*</span></label>
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <input type="radio" class="btn-check" name="watchlist_match" id="wl_no" value="0" checked required>
-                                        <label class="btn btn-outline-success w-100 p-3 text-start rounded-3 d-flex align-items-center gap-3" for="wl_no">
-                                            <div class="icon-wrapper bg-success bg-opacity-10 text-success rounded-circle p-2">
-                                                <i class="bi bi-check-lg fs-4"></i>
+                                        <label class="selection-card p-3 w-100 rounded-3 d-flex align-items-center cursor-pointer" for="wl_no">
+                                            <div class="icon-box bg-success-subtle text-success rounded-circle me-3">
+                                                <i class="bi bi-shield-check fs-4"></i>
                                             </div>
                                             <div>
-                                                <div class="fw-bold">AMAN / BERSIH</div>
-                                                <small style="font-size: 0.8rem;">Tidak terdapat kecocokan data</small>
+                                                <div class="fw-bold text-dark">AMAN / BERSIH</div>
+                                                <small class="text-muted" style="font-size: 0.75rem;">Tidak ada kecocokan data</small>
                                             </div>
+                                            <div class="check-indicator ms-auto text-success"><i class="bi bi-check-circle-fill fs-4"></i></div>
                                         </label>
                                     </div>
                                     <div class="col-md-6">
                                         <input type="radio" class="btn-check" name="watchlist_match" id="wl_yes" value="1">
-                                        <label class="btn btn-outline-danger w-100 p-3 text-start rounded-3 d-flex align-items-center gap-3" for="wl_yes">
-                                            <div class="icon-wrapper bg-danger bg-opacity-10 text-danger rounded-circle p-2">
-                                                <i class="bi bi-exclamation-lg fs-4"></i>
+                                        <label class="selection-card p-3 w-100 rounded-3 d-flex align-items-center cursor-pointer danger-mode" for="wl_yes">
+                                            <div class="icon-box bg-danger-subtle text-danger rounded-circle me-3">
+                                                <i class="bi bi-exclamation-triangle-fill fs-4"></i>
                                             </div>
                                             <div>
-                                                <div class="fw-bold">TERINDIKASI (HIT)</div>
-                                                <small style="font-size: 0.8rem;">Terdapat kecocokan data</small>
+                                                <div class="fw-bold text-dark">TERINDIKASI (HIT)</div>
+                                                <small class="text-muted" style="font-size: 0.75rem;">Terdapat kecocokan data</small>
                                             </div>
+                                            <div class="check-indicator ms-auto text-danger"><i class="bi bi-check-circle-fill fs-4"></i></div>
                                         </label>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Existing -->
-                            <div class="mb-4 p-3 rounded-3 bg-light border border-dashed">
-                                <label class="form-label fw-bold text-dark mb-3 d-block">
-                                    2. Pengecekan Database Existing (Duplikasi) <span class="text-danger">*</span>
-                                </label>
+                            <!-- Existing Card -->
+                            <div class="mb-4">
+                                <label class="fw-bold text-dark mb-2 d-block">2. Database Existing (Duplikasi) <span class="text-danger">*</span></label>
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <input type="radio" class="btn-check" name="existing_match" id="ex_no" value="0" checked required>
-                                        <label class="btn btn-outline-success w-100 p-3 text-start rounded-3 d-flex align-items-center gap-3" for="ex_no">
-                                            <div class="icon-wrapper bg-success bg-opacity-10 text-success rounded-circle p-2">
-                                                <i class="bi bi-person-check fs-4"></i>
+                                        <label class="selection-card p-3 w-100 rounded-3 d-flex align-items-center cursor-pointer" for="ex_no">
+                                            <div class="icon-box bg-success-subtle text-success rounded-circle me-3">
+                                                <i class="bi bi-person-plus-fill fs-4"></i>
                                             </div>
                                             <div>
-                                                <div class="fw-bold">DATA BARU</div>
-                                                <small style="font-size: 0.8rem;">Belum ada di database</small>
+                                                <div class="fw-bold text-dark">DATA BARU</div>
+                                                <small class="text-muted" style="font-size: 0.75rem;">Nasabah belum terdaftar</small>
                                             </div>
+                                            <div class="check-indicator ms-auto text-success"><i class="bi bi-check-circle-fill fs-4"></i></div>
                                         </label>
                                     </div>
                                     <div class="col-md-6">
                                         <input type="radio" class="btn-check" name="existing_match" id="ex_yes" value="1">
-                                        <label class="btn btn-outline-danger w-100 p-3 text-start rounded-3 d-flex align-items-center gap-3" for="ex_yes">
-                                            <div class="icon-wrapper bg-danger bg-opacity-10 text-danger rounded-circle p-2">
+                                        <label class="selection-card p-3 w-100 rounded-3 d-flex align-items-center cursor-pointer danger-mode" for="ex_yes">
+                                            <div class="icon-box bg-danger-subtle text-danger rounded-circle me-3">
                                                 <i class="bi bi-people-fill fs-4"></i>
                                             </div>
                                             <div>
-                                                <div class="fw-bold">DUPLIKASI</div>
-                                                <small style="font-size: 0.8rem;">Nasabah sudah terdaftar</small>
+                                                <div class="fw-bold text-dark">DUPLIKASI</div>
+                                                <small class="text-muted" style="font-size: 0.75rem;">Nasabah sudah terdaftar</small>
                                             </div>
+                                            <div class="check-indicator ms-auto text-danger"><i class="bi bi-check-circle-fill fs-4"></i></div>
                                         </label>
                                     </div>
                                 </div>
@@ -184,16 +230,22 @@
 
                         <!-- Catatan -->
                         <div class="mb-4">
-                            <label class="form-label small fw-bold text-muted">CATATAN TAMBAHAN (OPSIONAL)</label>
-                            <textarea name="notes" class="form-control bg-white border-secondary-subtle" rows="3" placeholder="Contoh: Nasabah memiliki nama mirip tapi tanggal lahir berbeda..."></textarea>
+                            <div class="form-floating">
+                                <textarea name="notes" class="form-control bg-white border" id="notes" style="height: 100px" placeholder="Catatan"></textarea>
+                                <label for="notes" class="text-muted">Catatan Tambahan (Opsional)</label>
+                            </div>
                         </div>
 
-                        <hr class="my-4 opacity-25">
+                        <hr class="my-5 opacity-10">
 
-                        <!-- Action Button -->
-                        <div class="d-flex justify-content-end">
-                            <button type="button" id="btnSubmit" class="btn btn-company btn-lg px-5 rounded-pill shadow-sm">
-                                <i class="bi bi-save2-fill me-2"></i> Simpan & Buat BA
+                        <!-- Action Button (TOMBOL BIRU SESUAI REQUEST) -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="text-muted small">
+                                <i class="bi bi-lock-fill me-1"></i> Data aman & terenkripsi
+                            </div>
+                            <!-- CLASS BTN-PRIMARY = BIRU -->
+                            <button type="button" id="btnSubmit" class="btn btn-primary btn-lg px-5 rounded-pill shadow hover-scale">
+                                <i class="bi bi-save2-fill me-2"></i> Simpan Data
                             </button>
                         </div>
                     </form>
@@ -203,23 +255,46 @@
 
         <!-- KOLOM KANAN: SIDEBAR -->
         <div class="col-12 col-lg-4">
-            <div class="sticky-top" style="top: 90px; z-index: 1;">
-                <div class="card shadow-sm border-0 rounded-4 mb-4 bg-white">
-                    <div class="card-header bg-info-subtle text-info-emphasis py-3 rounded-top-4 border-0">
-                        <h6 class="mb-0 fw-bold"><i class="bi bi-info-circle-fill me-2"></i> Panduan Approver</h6>
-                    </div>
-                    <div class="card-body">
-                        <ul class="list-group list-group-flush small">
-                            <li class="list-group-item border-0 ps-0 d-flex"><i class="bi bi-1-circle-fill text-primary me-2 fs-5"></i> <div><span class="fw-bold text-dark">Group Head Sales</span><p class="mb-0 text-muted">Prioritas Utama</p></div></li>
-                            <li class="list-group-item border-0 ps-0 d-flex"><i class="bi bi-2-circle-fill text-secondary me-2 fs-5"></i> <div><span class="fw-bold text-dark">Direktur Utama</span><p class="mb-0 text-muted">Backup 1</p></div></li>
-                            <li class="list-group-item border-0 ps-0 d-flex"><i class="bi bi-3-circle-fill text-secondary me-2 fs-5"></i> <div><span class="fw-bold text-dark">Direktur</span><p class="mb-0 text-muted">Backup 2</p></div></li>
-                        </ul>
+            <div class="sticky-top" style="top: 100px; z-index: 1;">
+                <div class="card shadow-sm border-0 rounded-4 mb-4 bg-white overflow-hidden">
+                    <div class="card-body p-0">
+                        <!-- HEADER SIDEBAR BIRU -->
+                        <div class="p-4 bg-primary text-white">
+                            <h6 class="mb-1 fw-bold"><i class="bi bi-info-circle-fill me-2"></i>Informasi Approval</h6>
+                            <p class="small text-white-50 mb-0">Urutan pejabat berwenang.</p>
+                        </div>
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item p-3 border-bottom-0 d-flex align-items-center">
+                                <div class="badge bg-primary-subtle text-primary rounded-pill me-3">1</div>
+                                <div>
+                                    <span class="fw-bold text-dark d-block" style="font-size: 0.9rem;">Group Head Sales</span>
+                                    <small class="text-muted" style="font-size: 0.75rem;">Approver Utama</small>
+                                </div>
+                            </div>
+                            <div class="list-group-item p-3 border-bottom-0 d-flex align-items-center">
+                                <div class="badge bg-secondary-subtle text-secondary rounded-pill me-3">2</div>
+                                <div>
+                                    <span class="fw-bold text-dark d-block" style="font-size: 0.9rem;">Direktur Utama</span>
+                                    <small class="text-muted" style="font-size: 0.75rem;">Backup Pertama</small>
+                                </div>
+                            </div>
+                            <div class="list-group-item p-3 d-flex align-items-center">
+                                <div class="badge bg-secondary-subtle text-secondary rounded-pill me-3">3</div>
+                                <div>
+                                    <span class="fw-bold text-dark d-block" style="font-size: 0.9rem;">Direktur</span>
+                                    <small class="text-muted" style="font-size: 0.75rem;">Backup Kedua</small>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="card shadow-sm border-0 rounded-4 bg-light">
-                    <div class="card-body p-4">
-                        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-shield-lock-fill me-2 text-company"></i> Keamanan Data</h6>
-                        <p class="small text-muted mb-0" style="text-align: justify;">Data yang sudah disimpan tidak dapat diubah. Pastikan pengecekan dilakukan dengan teliti.</p>
+                
+                <div class="card bg-warning-subtle border-0 rounded-4">
+                    <div class="card-body p-3 d-flex">
+                        <i class="bi bi-lightbulb-fill text-warning me-3 fs-4"></i>
+                        <p class="small text-dark mb-0 lh-sm">
+                            Pastikan Anda telah melakukan pengecekan data di aplikasi <strong>BOFIS</strong> dan <strong>PPATK</strong> sebelum menyimpan.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -231,76 +306,144 @@
 @push('styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 <style>
-    :root { --calm-water-blue: #165581; --atmospheric-blue: #29AAE2; --sincere-yellow: #EFCA18; }
-    .text-company { color: #165581; }
-    .bg-gradient-company { background: linear-gradient(135deg, #165581 0%, #2d7a9e 100%); }
-    .btn-company { background-color: #165581; border-color: #165581; color: white; transition: background-color 0.2s; }
-    .btn-company:hover { background-color: #114466; border-color: #114466; }
-    .form-control, .form-select { border-color: #dee2e6; padding: 12px 15px; }
-    .form-control:focus, .form-select:focus { border-color: #29AAE2; box-shadow: none; background-color: #f8fcff; }
-    .btn-check:checked + .btn-outline-success { background-color: #d1e7dd !important; color: #0f5132 !important; border-color: #198754 !important; }
-    .btn-check:checked + .btn-outline-danger { background-color: #f8d7da !important; color: #842029 !important; border-color: #dc3545 !important; }
-    .rounded-4 { border-radius: 1rem; }
-    .border-dashed { border-style: dashed !important; border-color: #cbd5e1 !important; }
-    
-    /* === UPDATE PENTING: CSS LOADING BARU SESUAI PERMINTAAN === */
-    .custom-swal-popup { 
-        border-radius: 24px !important; 
-        padding-top: 0 !important; 
-        overflow: hidden; 
-        font-family: 'Segoe UI', Tahoma, sans-serif; 
-    }
-    /* Strip Warna-warni di atas */
-    .custom-swal-popup::before { 
-        content: ''; 
-        display: block; 
-        height: 8px; 
-        width: 100%; 
-        background: linear-gradient(90deg, var(--calm-water-blue) 0%, var(--calm-water-blue) 33%, var(--atmospheric-blue) 33%, var(--atmospheric-blue) 66%, var(--sincere-yellow) 66%, var(--sincere-yellow) 100%); 
+    /* VARIABLES */
+    :root { 
+        --primary-blue: #0d6efd; 
+        --dark-navy: #104e70; /* Warna tombol sesuai gambar referensi popup */
     }
     
-    .swal2-confirm-btn { background: linear-gradient(135deg, #165581, #12466b) !important; border-radius: 50px !important; padding: 12px 30px !important; }
-    .swal2-cancel-btn { border-radius: 50px !important; padding: 12px 24px !important; }
+    .ls-1 { letter-spacing: 1px; }
+    .cursor-pointer { cursor: pointer; }
+    .hover-scale { transition: transform 0.2s; }
+    .hover-scale:hover { transform: translateY(-2px); }
+
+    /* STEP PROGRESS & FORM STYLES (Sama seperti sebelumnya) */
+    .step-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 2; position: relative; }
+    .step-label { font-size: 0.75rem; position: absolute; top: 36px; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+    .ring-effect { box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.2); }
+    .selection-card { border: 2px solid #f1f5f9; transition: all 0.25s ease; background-color: #fff; position: relative; overflow: hidden; }
+    .selection-card:hover { border-color: #cbd5e1; transform: translateY(-2px); }
+    .btn-check:checked + .selection-card { border-color: #198754; background-color: #f0fdf4; }
+    .btn-check:checked + .selection-card.danger-mode { border-color: #dc3545; background-color: #fef2f2; }
+    .form-floating > .form-control { border-radius: 0.75rem; }
+
+    /* --- CUSTOM POPUP STYLE (AGAR MIRIP GAMBAR) --- */
+    .swal-custom-popup {
+        border-radius: 20px !important;
+        padding: 2rem !important;
+        width: 450px !important;
+    }
+    
+    /* Membuat Icon Tanda Tanya Manual (Bulat, Garis Tipis) */
+    .custom-icon-container {
+        width: 80px;
+        height: 80px;
+        border: 3px solid #94a3b8; /* Warna abu-abu border */
+        border-radius: 50%;
+        margin: 0 auto 1.5rem auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+        font-size: 2.5rem;
+        font-family: sans-serif;
+    }
+
+    /* Tombol Cancel (Putih/Abu) */
+    .btn-swal-cancel {
+        background-color: #fff !important;
+        color: #64748b !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 50px !important;
+        padding: 10px 24px !important;
+        font-weight: 500 !important;
+        margin-right: 10px;
+    }
+    .btn-swal-cancel:hover { background-color: #f8f9fa !important; }
+
+    /* Tombol Confirm (Biru Tua Gelap - Sesuai Gambar) */
+    .btn-swal-confirm {
+        background-color: var(--dark-navy) !important;
+        color: #fff !important;
+        border: none !important;
+        border-radius: 50px !important;
+        padding: 10px 32px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 6px rgba(16, 78, 112, 0.3);
+    }
+    .btn-swal-confirm:hover { background-color: #0c3b55 !important; }
 </style>
 @endpush
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    // Logic Toggle Manual BA
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggle = document.getElementById('toggleManualBA');
+        const inputWrapper = document.getElementById('manualBAInputWrapper');
+        const autoMsg = document.getElementById('autoBAMsg');
+        const inputField = document.getElementById('manual_nomor_ba');
+
+        function updateState() {
+            if (toggle && toggle.checked) {
+                inputWrapper.style.display = 'block';
+                autoMsg.style.display = 'none';
+                setTimeout(() => inputField.focus(), 100); 
+            } else if (toggle) {
+                inputWrapper.style.display = 'none';
+                autoMsg.style.display = 'flex';
+                inputField.value = '';
+            }
+        }
+        if (toggle) {
+            toggle.addEventListener('change', updateState);
+            if (toggle.checked) updateState();
+        }
+    });
+
+    // --- SWEETALERT CUSTOM LOGIC ---
     document.getElementById('btnSubmit').addEventListener('click', function() {
         const form = document.getElementById('baForm');
-        if (!form.checkValidity()) { form.reportValidity(); return; }
+        
+        // Cek validasi HTML native dulu
+        if (!form.checkValidity()) { 
+            form.reportValidity(); 
+            return; 
+        }
 
+        // Tampilkan Popup Custom
         Swal.fire({
-            title: 'Konfirmasi Simpan',
-            html: "Pastikan hasil pengecekan <b>Watchlist</b> & <b>Existing</b> sudah benar.<br>Data tidak bisa diubah setelah disimpan.",
-            icon: 'question',
+            // Kita gunakan HTML custom untuk meniru layout gambar 100%
+            html: `
+                <div class="custom-icon-container">?</div>
+                <h3 class="fw-bold mb-2" style="color: #104e70;">Simpan Dokumen?</h3>
+                <p class="text-muted mb-4">
+                    Anda akan menyimpan data nasabah <b>{{ $nasabah->nama }}</b>.<br>
+                    <span class="small">Pastikan dokumen sudah diperiksa dengan benar.</span>
+                </p>
+            `,
             showCancelButton: true,
-            confirmButtonText: 'Ya, Simpan Data',
-            cancelButtonText: 'Cek Lagi',
-            reverseButtons: true,
-            backdrop: `rgba(22, 85, 129, 0.4)`,
+            confirmButtonText: 'Ya, Simpan',
+            cancelButtonText: 'Batal',
+            reverseButtons: true, // Agar tombol Batal di kiri, Simpan di kanan
+            buttonsStyling: false, // Matikan styling default SweetAlert
             customClass: {
-                popup: 'custom-swal-popup', 
-                confirmButton: 'swal2-confirm-btn',
-                cancelButton: 'swal2-cancel-btn me-2'
+                popup: 'swal-custom-popup',
+                confirmButton: 'btn-swal-confirm',
+                cancelButton: 'btn-swal-cancel'
             },
-            buttonsStyling: false
+            focusConfirm: false
         }).then((result) => {
             if (result.isConfirmed) {
-                // === UPDATE: TAMPILAN LOADING JAM PASIR ===
+                // Loading State
                 Swal.fire({
-                    title: 'Sedang Menyimpan...',
-                    html: '<div class="mb-3"><i class="bi bi-hourglass-split fs-1 text-primary"></i></div>Sistem sedang memproses dokumen Berita Acara...',
-                    timerProgressBar: true,
-                    didOpen: () => { Swal.showLoading(); },
+                    title: 'Memproses...',
+                    html: '<div class="spinner-border text-primary" role="status"></div>',
+                    showConfirmButton: false,
                     allowOutsideClick: false,
-                    backdrop: `rgba(255,255,255,0.9)`, // Putih transparan
-                    color: '#165581',
-                    customClass: { popup: 'custom-swal-popup border-0 shadow-lg' }, // Pakai class yang ada strip warna
-                    showConfirmButton: false
+                    customClass: { popup: 'swal-custom-popup' }
                 });
-                
                 form.submit();
             }
         });

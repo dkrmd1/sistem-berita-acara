@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\BeritaAcara;
 use App\Models\Nasabah;
 use App\Models\User;
+use App\Models\Setting; // Pastikan Model Setting ada
 use App\Notifications\NewBeritaAcaraNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -14,24 +15,31 @@ use Mpdf\Mpdf;
 
 class BeritaAcaraController extends Controller
 {
+    /**
+     * Menampilkan daftar Berita Acara
+     */
     public function index(Request $request)
     {
         $query = BeritaAcara::with(['nasabah', 'creator', 'approver', 'approvedBy']);
         
+        // Filter Status
         if ($request->has('status') && $request->status != '') {
             $query->where('status', $request->status);
         }
         
         $user = Auth::user();
         
+        // Filter My Tasks (Approver)
         if ($user->isApprover() && $request->filter == 'my') {
             $query->where('approver_id', $user->id)->where('status', 'pending');
         }
         
+        // Filter My Created (CS)
         if ($user->isCS() && $request->filter == 'my') {
             $query->where('created_by', $user->id);
         }
         
+        // Search
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -47,6 +55,9 @@ class BeritaAcaraController extends Controller
         return view('berita-acara.index', compact('beritaAcaras'));
     }
 
+    /**
+     * Halaman pilih nasabah untuk buat BA baru
+     */
     public function create(Request $request)
     {
         if (!Auth::user()->isCS()) {
@@ -70,6 +81,9 @@ class BeritaAcaraController extends Controller
         return view('berita-acara.create', compact('nasabahs'));
     }
 
+    /**
+     * Form pengisian data BA
+     */
     public function createForm($nasabahId)
     {
         if (!Auth::user()->isCS()) {
@@ -90,36 +104,69 @@ class BeritaAcaraController extends Controller
         }
         
         $approvers = User::approvers()->get();
+
+        // AMBIL SETTING DARI DATABASE (Default ON/1 jika tidak ada)
+        $isAutoEnabled = Setting::getValue('auto_generate_ba', '1') == '1';
         
-        return view('berita-acara.form', compact('nasabah', 'approvers'));
+        return view('berita-acara.form', compact('nasabah', 'approvers', 'isAutoEnabled'));
     }
 
+    /**
+     * Simpan data BA ke Database
+     */
     public function store(Request $request)
     {
-        // Cek TTD CS
+        // Cek TTD CS lagi
         if (empty(Auth::user()->ttd_path)) {
-            return redirect()->route('berita-acara.create')
-                ->with('ttd_missing', 'Anda belum mengupload tanda tangan digital.');
+            return redirect()->route('berita-acara.create')->with('ttd_missing', 'Upload TTD dulu.');
         }
 
-        $request->validate([
+        // AMBIL SETTING
+        $isAutoEnabled = Setting::getValue('auto_generate_ba', '1') == '1';
+
+        // 1. Validasi
+        $rules = [
             'nasabah_id' => 'required|exists:nasabahs,id',
             'tanggal_ba' => 'required|date',
             'approver_id' => 'required|exists:users,id',
             'watchlist_match' => 'required|boolean',
             'existing_match' => 'required|boolean',
             'notes' => 'nullable|string',
+        ];
+
+        // Validasi Manual Input (Hanya jika diisi, cek unique)
+        if ($request->filled('manual_nomor_ba')) {
+            $rules['manual_nomor_ba'] = 'string|unique:berita_acaras,nomor_ba';
+        }
+
+        $request->validate($rules, [
+            'manual_nomor_ba.unique' => 'Nomor BA tersebut sudah digunakan.',
         ]);
 
         try {
             $nasabah = Nasabah::findOrFail($request->nasabah_id);
+            if ($nasabah->has_berita_acara) return back()->with('error', 'Nasabah sudah punya BA!');
             
-            if ($nasabah->has_berita_acara) {
-                return back()->with('error', 'Nasabah ini sudah memiliki Berita Acara!');
+            // 2. LOGIC PENENTUAN NOMOR
+            $nomorBA = null; // Default NULL (Kosong)
+
+            if ($isAutoEnabled) {
+                // KONDISI: AUTO GENERATE AKTIF (ON)
+                // Cek apakah user mencentang "Pakai Manual"?
+                if ($request->has('use_manual_ba') && $request->use_manual_ba == '1') {
+                    // User pilih manual saat Auto ON
+                    $nomorBA = $request->filled('manual_nomor_ba') ? strtoupper(trim($request->manual_nomor_ba)) : null;
+                } else {
+                    // User pilih Otomatis
+                    $nomorBA = BeritaAcara::generateNomorBA();
+                }
+            } else {
+                // KONDISI: AUTO GENERATE MATI (OFF)
+                // Paksa ambil dari input manual (meskipun kosong)
+                $nomorBA = $request->filled('manual_nomor_ba') ? strtoupper(trim($request->manual_nomor_ba)) : null;
             }
             
-            $nomorBA = BeritaAcara::generateNomorBA();
-            
+            // 3. Simpan
             $beritaAcara = BeritaAcara::create([
                 'nasabah_id' => $nasabah->id,
                 'nomor_ba' => $nomorBA,
@@ -134,7 +181,7 @@ class BeritaAcaraController extends Controller
             
             $nasabah->markHasBeritaAcara();
             
-            // Generate PDF (TTD CS sudah masuk)
+            // Generate PDF awal
             $this->generatePDF($beritaAcara);
             
             $approver = User::find($request->approver_id);
@@ -147,10 +194,23 @@ class BeritaAcaraController extends Controller
             
         } catch (\Exception $e) {
             Log::error('Error creating BA: ' . $e->getMessage());
-            return back()->with('error', 'Gagal membuat Berita Acara: ' . $e->getMessage());
+            return back()->with('error', 'Gagal membuat Berita Acara: ' . $e->getMessage())->withInput();
         }
     }
 
+    /**
+     * Menampilkan Detail BA
+     */
+    public function show($id)
+    {
+        $beritaAcara = BeritaAcara::with(['nasabah', 'creator', 'approver', 'approvedBy'])
+            ->findOrFail($id);
+        return view('berita-acara.show', compact('beritaAcara'));
+    }
+
+    /**
+     * Proses Approval oleh Approver
+     */
     public function approve($id)
     {
         $user = Auth::user();
@@ -176,8 +236,6 @@ class BeritaAcaraController extends Controller
             // Regenerate PDF dengan TTD Approver
             $this->generatePDF($beritaAcara, true);
 
-            $creator = User::find($beritaAcara->created_by);
-            
             return back()->with('success', 'Berita Acara berhasil di-approve!');
             
         } catch (\Exception $e) {
@@ -186,13 +244,9 @@ class BeritaAcaraController extends Controller
         }
     }
 
-    public function show($id)
-    {
-        $beritaAcara = BeritaAcara::with(['nasabah', 'creator', 'approver', 'approvedBy'])
-            ->findOrFail($id);
-        return view('berita-acara.show', compact('beritaAcara'));
-    }
-
+    /**
+     * Proses Reject oleh Approver
+     */
     public function reject(Request $request, $id)
     {
         $request->validate(['notes' => 'required|string']);
@@ -209,6 +263,9 @@ class BeritaAcaraController extends Controller
         return back()->with('success', 'Berita Acara berhasil ditolak.');
     }
     
+    /**
+     * View PDF di browser
+     */
     public function viewPDF($id)
     {
         $beritaAcara = BeritaAcara::findOrFail($id);
@@ -223,6 +280,9 @@ class BeritaAcaraController extends Controller
         return response()->file($fullPath);
     }
     
+    /**
+     * Download PDF
+     */
     public function downloadPDF($id)
     {
         $beritaAcara = BeritaAcara::findOrFail($id);
@@ -234,13 +294,15 @@ class BeritaAcaraController extends Controller
             abort(404, 'File PDF tidak ditemukan.');
         }
         
-        $fileName = 'BA_' . str_replace('/', '_', $beritaAcara->nomor_ba) . '.pdf';
+        // Handle nama file jika nomor_ba NULL
+        $nomor = $beritaAcara->nomor_ba ? str_replace('/', '_', $beritaAcara->nomor_ba) : 'TANPA_NOMOR_' . $beritaAcara->id;
+        $fileName = 'BA_' . $nomor . '.pdf';
         
         return response()->download($fullPath, $fileName);
     }
 
     /**
-     * Print PDF (sama seperti viewPDF tapi tanpa download)
+     * Print PDF (Inline)
      */
     public function printPDF($id)
     {
@@ -253,10 +315,11 @@ class BeritaAcaraController extends Controller
             abort(404, 'File PDF tidak ditemukan.');
         }
         
-        // Return file untuk ditampilkan di browser (bisa langsung di-print)
+        $nomor = $beritaAcara->nomor_ba ? str_replace('/', '_', $beritaAcara->nomor_ba) : 'TANPA_NOMOR_' . $beritaAcara->id;
+
         return response()->file($fullPath, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="BA_' . str_replace('/', '_', $beritaAcara->nomor_ba) . '.pdf"'
+            'Content-Disposition' => 'inline; filename="BA_' . $nomor . '.pdf"'
         ]);
     }
 
@@ -277,20 +340,13 @@ class BeritaAcaraController extends Controller
         }
     }
 
-    /**
-     * Generate PDF menggunakan mPDF
-     * FIXED: Sekarang benar-benar membuat file PDF
-     */
     private function generatePDF($beritaAcara, $forceRegenerate = false)
     {
         try {
-            // Load relasi yang dibutuhkan
             $beritaAcara->load(['nasabah', 'creator', 'approver', 'approvedBy']);
             
-            // Render HTML dari view
             $html = view('berita-acara.pdf', compact('beritaAcara'))->render();
             
-            // Inisialisasi mPDF
             $mpdf = new Mpdf([
                 'mode' => 'utf-8',
                 'format' => 'A4',
@@ -300,40 +356,31 @@ class BeritaAcaraController extends Controller
                 'margin_right' => 20,
             ]);
             
-            // Tulis HTML ke PDF
             $mpdf->WriteHTML($html);
             
-            // Tentukan path penyimpanan
             $directory = 'berita-acara';
             $fileName = 'BA_' . $beritaAcara->id . '_' . time() . '.pdf';
             $relativePath = $directory . '/' . $fileName;
             $fullPath = storage_path('app/' . $relativePath);
             
-            // Pastikan direktori ada
             if (!Storage::exists($directory)) {
                 Storage::makeDirectory($directory);
             }
             
-            // Simpan file PDF
             $mpdf->Output($fullPath, 'F');
             
-            // Hapus file lama jika ada dan berbeda
             if ($beritaAcara->pdf_path && $beritaAcara->pdf_path !== $relativePath) {
                 if (Storage::exists($beritaAcara->pdf_path)) {
                     Storage::delete($beritaAcara->pdf_path);
                 }
             }
             
-            // Update path di database
             $beritaAcara->update(['pdf_path' => $relativePath]);
-            
-            Log::info("PDF generated successfully: {$relativePath}");
             
             return $relativePath;
             
         } catch (\Exception $e) {
             Log::error('Error generating PDF: ' . $e->getMessage());
-            Log::error($e->getTraceAsString());
             throw $e;
         }
     }

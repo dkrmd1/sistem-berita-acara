@@ -213,16 +213,18 @@
                                            data-bs-toggle="tooltip">
                                             <i class="bi bi-download"></i> Download
                                         </a>
+                                        <!-- Update Button Restore -->
                                         <button type="button" 
-                                                class="btn btn-sm btn-outline-success" 
-                                                onclick="confirmRestore('{{ $backup['name'] }}')"
+                                                class="btn btn-sm btn-outline-warning" 
+                                                onclick="openRestoreModal('{{ $backup['name'] }}')"
                                                 title="Restore dari Backup"
                                                 data-bs-toggle="tooltip">
                                             <i class="bi bi-arrow-clockwise"></i> Restore
                                         </button>
+                                        <!-- Update Button Delete -->
                                         <button type="button" 
                                                 class="btn btn-sm btn-outline-danger" 
-                                                onclick="confirmDelete('{{ $backup['name'] }}')"
+                                                onclick="openDeleteModal('{{ $backup['name'] }}')"
                                                 title="Hapus Backup"
                                                 data-bs-toggle="tooltip">
                                             <i class="bi bi-trash"></i>
@@ -290,6 +292,10 @@
         </div>
     </div>
 </div>
+
+<!-- ============================================ -->
+<!-- MODALS -->
+<!-- ============================================ -->
 
 <!-- Modal Upload Backup -->
 <div class="modal fade" id="uploadBackupModal" tabindex="-1">
@@ -423,69 +429,193 @@
     </div>
 </div>
 
-<!-- Form Hidden untuk Delete -->
-<form id="deleteForm" method="POST" style="display: none;">
-    @csrf
-    @method('DELETE')
-</form>
+<!-- Modal Konfirmasi Restore (NEW) -->
+<div class="modal fade" id="restoreBackupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #ffc107, #fd7e14);">
+                <h5 class="modal-title fw-bold text-dark">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Konfirmasi Restore
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="restoreFormModal" method="POST">
+                @csrf
+                <div class="modal-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="bi bi-arrow-counterclockwise text-warning display-1"></i>
+                    </div>
+                    <h5 class="fw-bold text-danger">PERINGATAN PENTING!</h5>
+                    <p class="mb-3">Anda akan melakukan restore data menggunakan file:</p>
+                    
+                    <div class="alert alert-warning border-0 fw-bold shadow-sm">
+                        <i class="bi bi-file-earmark-zip-fill"></i> <span id="restoreFileName">filename.zip</span>
+                    </div>
 
-<!-- Form Hidden untuk Restore -->
-<form id="restoreForm" method="POST" style="display: none;">
-    @csrf
-</form>
+                    <ul class="text-start text-muted small bg-light p-3 rounded list-unstyled border">
+                        <li class="mb-2"><i class="bi bi-dot"></i> Tindakan ini akan <strong>MENIMPA/MENGHAPUS</strong> seluruh data saat ini.</li>
+                        <li class="mb-2"><i class="bi bi-dot"></i> Data akan digantikan dengan data dari backup.</li>
+                        <li><i class="bi bi-dot"></i> <strong>Tindakan ini tidak dapat dibatalkan!</strong></li>
+                    </ul>
+                    
+                    <div class="form-check text-start d-inline-block mt-2">
+                        <input class="form-check-input" type="checkbox" id="confirmRestoreCheck" required>
+                        <label class="form-check-label small" for="confirmRestoreCheck">
+                            Saya mengerti risikonya dan ingin melanjutkan.
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light justify-content-center">
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-warning px-4 fw-bold" id="btnSubmitRestore" disabled>
+                        <i class="bi bi-arrow-clockwise"></i> Ya, Restore Sekarang
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Hapus (NEW) -->
+<div class="modal fade" id="deleteBackupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-trash-fill"></i> Hapus Backup
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="deleteFormModal" method="POST">
+                @csrf
+                @method('DELETE')
+                <div class="modal-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="bi bi-trash3 text-danger" style="font-size: 4rem;"></i>
+                    </div>
+                    <p class="mb-2">Apakah Anda yakin ingin menghapus file backup ini?</p>
+                    <div class="fw-bold text-dark mb-3" id="deleteFileName">filename.zip</div>
+                    <small class="text-muted d-block">File yang dihapus tidak dapat dikembalikan.</small>
+                </div>
+                <div class="modal-footer bg-light justify-content-center p-2">
+                    <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger btn-sm px-3">
+                        <i class="bi bi-trash"></i> Ya, Hapus
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @endsection
 
 @push('scripts')
 <script>
-// Initialize tooltips
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Tooltips
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 
-    // Handle file input change
+    // 1. Handle File Upload Validation
     const fileInput = document.getElementById('backup_file');
     const uploadBtn = document.getElementById('uploadBtn');
     const fileInfo = document.getElementById('fileInfo');
     const fileName = document.getElementById('fileName');
     const fileSize = document.getElementById('fileSize');
 
-    fileInput.addEventListener('change', function(e) {
-        if (this.files && this.files[0]) {
-            const file = this.files[0];
+    if(fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                const validFormat = /^backup_\d{4}-\d{2}-\d{2}_\d{6}\.zip$/;
+                
+                // Validasi Nama
+                if (!validFormat.test(file.name)) {
+                    alert('❌ Format nama file tidak valid!\nHarus: backup_YYYY-MM-DD_HHMMSS.zip');
+                    this.value = '';
+                    uploadBtn.disabled = true;
+                    fileInfo.classList.add('d-none');
+                    return;
+                }
+
+                // Validasi Size (500MB)
+                if (file.size > 500 * 1024 * 1024) {
+                    alert('❌ Ukuran file terlalu besar (Max 500MB)!');
+                    this.value = '';
+                    uploadBtn.disabled = true;
+                    fileInfo.classList.add('d-none');
+                    return;
+                }
+
+                fileName.textContent = file.name;
+                fileSize.textContent = formatBytes(file.size);
+                fileInfo.classList.remove('d-none');
+                uploadBtn.disabled = false;
+            }
+        });
+    }
+
+    // 2. Handle Restore Checkbox Logic
+    const confirmCheck = document.getElementById('confirmRestoreCheck');
+    const btnRestore = document.getElementById('btnSubmitRestore');
+    if(confirmCheck) {
+        confirmCheck.addEventListener('change', function() {
+            btnRestore.disabled = !this.checked;
+        });
+    }
+
+    // 3. Loading Indicator for all Forms
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function() {
+            // Tampilkan loader jika ada elemen pageLoader di main layout
+            const pageLoader = document.getElementById('pageLoader');
+            if (pageLoader) pageLoader.style.display = 'flex';
             
-            // Validasi format nama file
-            const validFormat = /^backup_\d{4}-\d{2}-\d{2}_\d{6}\.zip$/;
-            if (!validFormat.test(file.name)) {
-                alert('❌ Format nama file tidak valid!\n\nHarus: backup_YYYY-MM-DD_HHMMSS.zip\nContoh: backup_2024-01-15_143052.zip');
-                this.value = '';
-                uploadBtn.disabled = true;
-                fileInfo.classList.add('d-none');
-                return;
+            // Disable tombol submit agar tidak double submit & ubah text
+            const btn = this.querySelector('button[type="submit"]');
+            if(btn) {
+                const originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memproses...';
             }
-
-            // Validasi ukuran file (max 500MB)
-            const maxSize = 500 * 1024 * 1024; // 500MB in bytes
-            if (file.size > maxSize) {
-                alert('❌ Ukuran file terlalu besar!\n\nMaksimal: 500MB\nUkuran file Anda: ' + formatBytes(file.size));
-                this.value = '';
-                uploadBtn.disabled = true;
-                fileInfo.classList.add('d-none');
-                return;
-            }
-
-            // Tampilkan info file
-            fileName.textContent = file.name;
-            fileSize.textContent = formatBytes(file.size);
-            fileInfo.classList.remove('d-none');
-            uploadBtn.disabled = false;
-        }
+        });
     });
 });
 
-// Format bytes
+// Fungsi Membuka Modal Restore
+function openRestoreModal(filename) {
+    // Set Action URL Form
+    const form = document.getElementById('restoreFormModal');
+    form.action = `/backup/restore/${filename}`;
+    
+    // Set Nama File di Teks
+    document.getElementById('restoreFileName').textContent = filename;
+    
+    // Reset Checkbox & Tombol
+    document.getElementById('confirmRestoreCheck').checked = false;
+    document.getElementById('btnSubmitRestore').disabled = true;
+    
+    // Buka Modal
+    new bootstrap.Modal(document.getElementById('restoreBackupModal')).show();
+}
+
+// Fungsi Membuka Modal Delete
+function openDeleteModal(filename) {
+    // Set Action URL Form
+    const form = document.getElementById('deleteFormModal');
+    form.action = `/backup/delete/${filename}`;
+    
+    // Set Nama File
+    document.getElementById('deleteFileName').textContent = filename;
+    
+    // Buka Modal
+    new bootstrap.Modal(document.getElementById('deleteBackupModal')).show();
+}
+
 function formatBytes(bytes) {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -493,73 +623,5 @@ function formatBytes(bytes) {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
 }
-
-// Konfirmasi Restore
-function confirmRestore(filename) {
-    const confirmed = confirm(
-        '⚠️ PERINGATAN PENTING!\n\n' +
-        '═══════════════════════════════════\n\n' +
-        'Proses RESTORE akan:\n' +
-        '• MENGHAPUS semua data yang ada saat ini\n' +
-        '• MENGGANTI dengan data dari backup\n' +
-        '• Tidak bisa di-undo (dibatalkan)\n\n' +
-        '═══════════════════════════════════\n\n' +
-        'File: ' + filename + '\n\n' +
-        'Apakah Anda YAKIN ingin melanjutkan?\n' +
-        '(Semua perubahan setelah backup akan hilang!)'
-    );
-    
-    if (confirmed) {
-        const pageLoader = document.getElementById('pageLoader');
-        if (pageLoader) {
-            pageLoader.style.display = 'flex';
-        }
-        
-        const form = document.getElementById('restoreForm');
-        form.action = `/backup/restore/${filename}`;
-        form.submit();
-    }
-}
-
-// Konfirmasi Delete
-function confirmDelete(filename) {
-    const confirmed = confirm(
-        '🗑️ HAPUS BACKUP\n\n' +
-        '═══════════════════════════════════\n\n' +
-        'Apakah Anda yakin ingin menghapus backup ini?\n\n' +
-        'File: ' + filename + '\n\n' +
-        '⚠️ Tindakan ini TIDAK DAPAT dibatalkan!\n' +
-        'File backup akan dihapus permanen.'
-    );
-    
-    if (confirmed) {
-        const form = document.getElementById('deleteForm');
-        form.action = `/backup/delete/${filename}`;
-        form.submit();
-    }
-}
-
-// Loading indicator saat submit form
-document.getElementById('backupForm')?.addEventListener('submit', function() {
-    const pageLoader = document.getElementById('pageLoader');
-    if (pageLoader) {
-        pageLoader.style.display = 'flex';
-    }
-    
-    const submitBtn = this.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Membuat Backup...';
-});
-
-document.getElementById('uploadBackupForm')?.addEventListener('submit', function() {
-    const pageLoader = document.getElementById('pageLoader');
-    if (pageLoader) {
-        pageLoader.style.display = 'flex';
-    }
-    
-    const submitBtn = this.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Uploading...';
-});
 </script>
 @endpush

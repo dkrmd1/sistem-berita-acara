@@ -253,7 +253,5 @@
         </tr>
     </table>
 
-    <div class="footer-note">*coret yang tidak perlu</div>
-
 </body>
 </html>

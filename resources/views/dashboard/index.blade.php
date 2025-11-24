@@ -126,7 +126,7 @@
         </div>
     </div>
 
-    <!-- 3. STATUS BA CARDS -->
+    <!-- 3. STATUS BA CARDS (REJECTED DIHAPUS, KOLOM DISESUAIKAN JADI col-lg-6) -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="card shadow-sm border-0 rounded-4 overflow-hidden bg-white">
@@ -137,27 +137,23 @@
                 </div>
                 <div class="card-body p-4">
                     <div class="row text-center g-3">
-                        <div class="col-lg-4 col-md-4 col-sm-12">
+                        <!-- Pending (Diperlebar jadi col-lg-6) -->
+                        <div class="col-lg-6 col-md-6 col-sm-12">
                             <div class="status-box p-4 rounded-4 h-100 border border-warning border-opacity-25 bg-warning-subtle">
                                 <div class="mb-2"><i class="bi bi-clock-fill text-warning fs-1"></i></div>
                                 <h3 class="fw-bold text-dark counter">{{ $baPending }}</h3>
                                 <small class="text-muted fw-bold text-uppercase">Pending</small>
                             </div>
                         </div>
-                        <div class="col-lg-4 col-md-4 col-sm-12">
+                        <!-- Approved (Diperlebar jadi col-lg-6) -->
+                        <div class="col-lg-6 col-md-6 col-sm-12">
                             <div class="status-box p-4 rounded-4 h-100 border border-success border-opacity-25 bg-success-subtle">
                                 <div class="mb-2"><i class="bi bi-check-circle-fill text-success fs-1"></i></div>
                                 <h3 class="fw-bold text-dark counter">{{ $baApproved }}</h3>
                                 <small class="text-muted fw-bold text-uppercase">Approved</small>
                             </div>
                         </div>
-                        <div class="col-lg-4 col-md-4 col-sm-12">
-                            <div class="status-box p-4 rounded-4 h-100 border border-danger border-opacity-25 bg-danger-subtle">
-                                <div class="mb-2"><i class="bi bi-x-circle-fill text-danger fs-1"></i></div>
-                                <h3 class="fw-bold text-dark counter">{{ $baRejected }}</h3>
-                                <small class="text-muted fw-bold text-uppercase">Rejected</small>
-                            </div>
-                        </div>
+                        <!-- Bagian Rejected telah dihapus -->
                     </div>
                 </div>
             </div>

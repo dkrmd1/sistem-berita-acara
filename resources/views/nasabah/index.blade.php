@@ -174,20 +174,31 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-group shadow-sm rounded-pill" role="group">
+                                    {{-- 1. VIEW DETAIL --}}
                                     <a href="{{ route('nasabah.show', $nasabah->id) }}" class="btn btn-sm btn-light text-primary" data-bs-toggle="tooltip" title="Lihat Detail">
                                         <i class="bi bi-eye-fill"></i>
                                     </a>
                                     
-                                    @if(Auth::user()->isCS() && !$nasabah->has_berita_acara)
-                                    <a href="{{ route('berita-acara.create.form', $nasabah->id) }}" class="btn btn-sm btn-light text-success" data-bs-toggle="tooltip" title="Buat Berita Acara">
-                                        <i class="bi bi-plus-circle-fill"></i>
-                                    </a>
-                                    <button type="button" class="btn btn-sm btn-light text-danger btn-delete" 
-                                            data-id="{{ $nasabah->id }}" 
-                                            data-nama="{{ $nasabah->nama }}"
-                                            data-bs-toggle="tooltip" title="Hapus Data">
-                                        <i class="bi bi-trash-fill"></i>
-                                    </button>
+                                    @if(Auth::user()->isCS())
+                                        {{-- 2. EDIT (BARU DITAMBAHKAN) --}}
+                                        <a href="{{ route('nasabah.edit', $nasabah->id) }}" class="btn btn-sm btn-light text-warning" data-bs-toggle="tooltip" title="Edit Data">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+
+                                        @if(!$nasabah->has_berita_acara)
+                                            {{-- 3. CREATE BA (Jika belum ada BA) --}}
+                                            <a href="{{ route('berita-acara.create.form', $nasabah->id) }}" class="btn btn-sm btn-light text-success" data-bs-toggle="tooltip" title="Buat Berita Acara">
+                                                <i class="bi bi-plus-circle-fill"></i>
+                                            </a>
+                                            
+                                            {{-- 4. DELETE (Jika belum ada BA) --}}
+                                            <button type="button" class="btn btn-sm btn-light text-danger btn-delete" 
+                                                    data-id="{{ $nasabah->id }}" 
+                                                    data-nama="{{ $nasabah->nama }}"
+                                                    data-bs-toggle="tooltip" title="Hapus Data">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </button>
+                                        @endif
                                     @endif
                                 </div>
                                 <!-- Hidden Delete Form -->

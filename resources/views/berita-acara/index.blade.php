@@ -33,6 +33,7 @@
     </div>
 
     <!-- 2. STATISTIK MINI -->
+    <!-- Note: Kartu Rejected dihapus, layout tetap menggunakan col-md-3 -->
     <div class="row g-3 mb-4">
         <div class="col-md-3">
             <div class="card stat-card shadow-sm border-0 h-100 gradient-sincere-yellow card-hover rounded-4">
@@ -64,21 +65,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card stat-card shadow-sm border-0 h-100 gradient-rejected card-hover rounded-4">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p class="text-white-50 mb-1 small fw-bold text-uppercase">Rejected</p>
-                            <h2 class="mb-0 fw-bold text-white">{{ \App\Models\BeritaAcara::rejected()->count() }}</h2>
-                        </div>
-                        <div class="icon-box bg-white bg-opacity-25 rounded-circle p-3">
-                            <i class="bi bi-x-circle-fill fs-2 text-white"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Kartu Rejected dihapus dari sini -->
         <div class="col-md-3">
             <div class="card stat-card shadow-sm border-0 h-100 gradient-atmospheric card-hover rounded-4">
                 <div class="card-body p-4">
@@ -119,7 +106,7 @@
                             <option value="">Semua Status</option>
                             <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>⏳ Pending</option>
                             <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>✅ Approved</option>
-                            <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>❌ Rejected</option>
+                            <!-- Opsi Rejected dihapus dari sini -->
                         </select>
                     </div>
 
@@ -212,10 +199,6 @@
                                 @elseif($ba->status == 'approved')
                                     <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3">
                                         <i class="bi bi-check-circle-fill me-1"></i> Approved
-                                    </span>
-                                @else
-                                    <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-3">
-                                        <i class="bi bi-x-circle-fill me-1"></i> Rejected
                                     </span>
                                 @endif
                             </td>
@@ -311,7 +294,7 @@
     .gradient-calm-water { background: linear-gradient(135deg, #165581 0%, #2d7a9e 100%); color: white; }
     .gradient-atmospheric { background: linear-gradient(135deg, #29AAE2 0%, #5cb8e6 100%); color: white; }
     .gradient-sincere-yellow { background: linear-gradient(135deg, #EFCA18 0%, #f7c748 100%); color: white; }
-    .gradient-rejected { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; }
+    /* .gradient-rejected dihapus */
     
     /* === COMPONENTS === */
     .rounded-4 { border-radius: 1rem !important; }
