@@ -12,25 +12,56 @@ use Carbon\Carbon;
 
 class BackupController extends Controller
 {
-    // ... method index, uploadBackup, downloadBackup, deleteBackup TETAP SAMA ...
-    
+    // ==================== UPDATE BAGIAN INI ====================
     public function index()
     {
         $backups = $this->getBackupList();
+
+        // 1. Hitung Ukuran Real Database (Query ke MySQL)
+        try {
+            $dbName = env('DB_DATABASE');
+            $query = DB::select("SELECT sum(data_length + index_length) as size FROM information_schema.TABLES WHERE table_schema = ?", [$dbName]);
+            $dbSizeBytes = $query[0]->size ?? 0;
+            $dbSize = $this->formatBytes($dbSizeBytes);
+        } catch (\Exception $e) {
+            $dbSize = 'Error';
+        }
+
+        // 2. Hitung Ukuran Real File (TTD + Berita Acara)
+        $filesSizeBytes = 0;
+        // Hitung folder TTD
+        $filesSizeBytes += $this->getFolderSize(storage_path('app/public/ttd'));
+        // Hitung folder Berita Acara
+        $filesSizeBytes += $this->getFolderSize(storage_path('app/public/berita_acara'));
+        
+        $fileSize = $this->formatBytes($filesSizeBytes);
+
+        // 3. Ambil Tanggal Backup Terakhir
+        // Karena $backups sudah disortir descending di getBackupList(), index 0 adalah yang terbaru
+        $lastBackupDate = '-';
+        if (count($backups) > 0) {
+            $lastBackupDate = $backups[0]['date']->format('d M Y (H:i)');
+        }
+
+        // 4. Statistik count (Tetap dipertahankan)
         $stats = [
             'users' => DB::table('users')->count(),
             'nasabah' => DB::table('nasabahs')->count(),
             'berita_acara' => DB::table('berita_acaras')->count(),
             'notifications' => DB::table('notifications')->count(),
         ];
-        return view('backup.index', compact('backups', 'stats'));
+
+        // KIRIM SEMUA DATA KE VIEW
+        return view('backup.index', compact('backups', 'stats', 'dbSize', 'fileSize', 'lastBackupDate'));
     }
+    // ==================== END UPDATE ====================
 
     public function createBackup(Request $request)
     {
+        // ... (KODE TETAP SAMA SEPERTI SEBELUMNYA) ...
         try {
-            set_time_limit(0); // Unlimited time untuk backup besar
-            ini_set('memory_limit', '-1'); // Unlimited memory
+            set_time_limit(0); 
+            ini_set('memory_limit', '-1');
             
             $timestamp = Carbon::now()->format('Y-m-d_His');
             $backupName = "backup_{$timestamp}";
@@ -40,16 +71,9 @@ class BackupController extends Controller
                 File::makeDirectory($backupPath, 0755, true);
             }
 
-            // 1. Backup Database
             $this->backupDatabase($backupPath);
-
-            // 2. Backup Files (TTD & PDF)
             $this->backupFiles($backupPath);
-
-            // 3. Compress menjadi ZIP
             $zipPath = $this->createZipArchive($backupPath, $backupName);
-
-            // 4. Hapus folder temporary
             File::deleteDirectory($backupPath);
 
             return redirect()->back()->with('success', '✅ Backup berhasil dibuat! File: ' . basename($zipPath));
@@ -62,7 +86,7 @@ class BackupController extends Controller
 
     public function uploadBackup(Request $request)
     {
-        // ... (Kode sama seperti sebelumnya) ...
+        // ... (KODE TETAP SAMA) ...
         try {
             $validator = Validator::make($request->all(), [
                 'backup_file' => 'required|file|mimes:zip|max:512000',
@@ -95,6 +119,7 @@ class BackupController extends Controller
 
     public function downloadBackup($filename)
     {
+        // ... (KODE TETAP SAMA) ...
         $path = storage_path("app/backups/{$filename}");
         if (!File::exists($path)) return redirect()->back()->with('error', 'File tidak ditemukan!');
         return response()->download($path);
@@ -102,9 +127,10 @@ class BackupController extends Controller
 
     public function restore(Request $request, $filename)
     {
+        // ... (KODE TETAP SAMA) ...
         try {
-            set_time_limit(0); // Unlimited time
-            ini_set('memory_limit', '-1'); // Unlimited memory
+            set_time_limit(0);
+            ini_set('memory_limit', '-1');
             
             $zipPath = storage_path("app/backups/{$filename}");
 
@@ -117,7 +143,6 @@ class BackupController extends Controller
                 return redirect()->back()->with('error', '❌ File backup corrupt!');
             }
             
-            // Extract ZIP
             $extractPath = storage_path("app/backups/temp_restore_" . time());
             if (!File::exists($extractPath)) {
                 File::makeDirectory($extractPath, 0755, true);
@@ -126,19 +151,13 @@ class BackupController extends Controller
             $zip->extractTo($extractPath);
             $zip->close();
 
-            // Validasi struktur
             if (!File::exists($extractPath . '/database.sql')) {
                 File::deleteDirectory($extractPath);
                 return redirect()->back()->with('error', '❌ File database.sql tidak ditemukan.');
             }
 
-            // 1. Restore Database (INI YANG DIPERBAIKI)
             $this->restoreDatabase($extractPath);
-
-            // 2. Restore Files
             $this->restoreFiles($extractPath);
-
-            // 3. Cleanup
             File::deleteDirectory($extractPath);
 
             return redirect()->back()->with('success', '✅ Restore berhasil! Data telah dipulihkan.');
@@ -151,6 +170,7 @@ class BackupController extends Controller
 
     public function deleteBackup($filename)
     {
+        // ... (KODE TETAP SAMA) ...
         $path = storage_path("app/backups/{$filename}");
         if (File::exists($path)) {
             File::delete($path);
@@ -161,8 +181,22 @@ class BackupController extends Controller
 
     // ==================== PRIVATE METHODS ====================
 
+    // --- METHOD BARU: UNTUK MENGHITUNG FOLDER SIZE ---
+    private function getFolderSize($path)
+    {
+        $size = 0;
+        if (File::exists($path)) {
+            foreach (File::allFiles($path) as $file) {
+                $size += $file->getSize();
+            }
+        }
+        return $size;
+    }
+    // ------------------------------------------------
+
     private function backupDatabase($backupPath)
     {
+        // ... (KODE TETAP SAMA) ...
         $tables = DB::select('SHOW TABLES');
         $dbName = env('DB_DATABASE');
         $tableKey = "Tables_in_{$dbName}";
@@ -173,16 +207,10 @@ class BackupController extends Controller
 
         foreach ($tables as $table) {
             $tableName = $table->$tableKey;
-            
-            // DROP TABLE
             $sql .= "DROP TABLE IF EXISTS `{$tableName}`;\n";
-            
-            // CREATE TABLE
             $createTable = DB::select("SHOW CREATE TABLE `{$tableName}`")[0];
             $sql .= $createTable->{'Create Table'} . ";\n\n";
             
-            // INSERT DATA
-            // Menggunakan chunking untuk hemat memori saat backup tabel besar
             DB::table($tableName)->orderByRaw('1')->chunk(100, function ($rows) use (&$sql, $tableName) {
                 foreach ($rows as $row) {
                     $values = [];
@@ -190,7 +218,6 @@ class BackupController extends Controller
                         if (is_null($value)) {
                             $values[] = 'NULL';
                         } else {
-                            // addslashes penting untuk handle quote
                             $values[] = "'" . addslashes($value) . "'";
                         }
                     }
@@ -201,43 +228,28 @@ class BackupController extends Controller
         }
 
         $sql .= "SET FOREIGN_KEY_CHECKS=1;\n";
-
         File::put($backupPath . '/database.sql', $sql);
     }
 
-    /**
-     * Restore database dari SQL file (DIPERBAIKI)
-     */
     private function restoreDatabase($extractPath)
     {
+        // ... (KODE TETAP SAMA) ...
         $sqlFile = $extractPath . '/database.sql';
-
         if (!File::exists($sqlFile)) {
             throw new \Exception('File database.sql tidak ditemukan!');
         }
-
-        // Matikan query log agar RAM tidak penuh
         DB::disableQueryLog();
-        
-        // Baca seluruh isi file
         $sql = File::get($sqlFile);
-
-        // FIX: Jangan di-explode berdasarkan ';'. 
-        // Langsung eksekusi seluruh perintah SQL secara raw (unprepared).
-        // Ini akan menangani data yang mengandung ';' dengan benar.
-        
         try {
             DB::unprepared($sql);
         } catch (\Exception $e) {
-            // Jika error packet too large, baru kita coba split cara aman (per baris insert)
-            // Tapi DB::unprepared biasanya sudah handle multi-statements.
             throw new \Exception('Gagal eksekusi SQL: ' . $e->getMessage());
         }
     }
 
     private function backupFiles($backupPath)
     {
-        // ... (Tetap sama) ...
+        // ... (KODE TETAP SAMA) ...
         $filesPath = $backupPath . '/files';
         File::makeDirectory($filesPath, 0755, true);
 
@@ -250,7 +262,7 @@ class BackupController extends Controller
 
     private function createZipArchive($sourcePath, $backupName)
     {
-        // ... (Tetap sama) ...
+        // ... (KODE TETAP SAMA) ...
         $zipPath = storage_path("app/backups/{$backupName}.zip");
         $zip = new ZipArchive;
         if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
@@ -269,7 +281,7 @@ class BackupController extends Controller
 
     private function restoreFiles($extractPath)
     {
-        // ... (Tetap sama) ...
+        // ... (KODE TETAP SAMA) ...
         $filesPath = $extractPath . '/files';
         if (!File::exists($filesPath)) return;
 
@@ -288,7 +300,7 @@ class BackupController extends Controller
 
     private function getBackupList()
     {
-        // ... (Tetap sama) ...
+        // ... (KODE TETAP SAMA) ...
         $backupPath = storage_path('app/backups');
         if (!File::exists($backupPath)) {
             File::makeDirectory($backupPath, 0755, true);
@@ -311,6 +323,7 @@ class BackupController extends Controller
 
     private function formatBytes($bytes, $precision = 2)
     {
+        if ($bytes == 0) return "0 B";
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
         for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) $bytes /= 1024;
         return round($bytes, $precision) . ' ' . $units[$i];

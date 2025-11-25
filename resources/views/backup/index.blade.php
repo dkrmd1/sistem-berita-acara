@@ -4,471 +4,387 @@
 
 @push('styles')
 <style>
-    .stat-card {
-        transition: transform 0.2s, box-shadow 0.2s;
+    :root {
+        --primary-dark: #0f4c75; /* Warna Biru Tua sesuai referensi */
+        --primary-light: #3282b8;
+        --accent: #bbe1fa;
+        --danger: #dc3545;
+        --success: #198754;
     }
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.1) !important;
+
+    /* --- 1. Header Style (Mirip Gambar Referensi) --- */
+    .header-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
     }
-    .backup-table tbody tr {
-        transition: background-color 0.2s;
+    
+    .header-icon-wrapper {
+        width: 56px;
+        height: 56px;
+        background-color: rgba(15, 76, 117, 0.1);
+        color: var(--primary-dark);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        transition: transform 0.3s;
     }
-    .backup-table tbody tr:hover {
-        background-color: rgba(64, 107, 133, 0.05);
+
+    .header-card:hover .header-icon-wrapper {
+        transform: scale(1.1);
+        background-color: var(--primary-dark);
+        color: #fff;
     }
-    .action-btn-group .btn {
-        transition: all 0.2s;
-    }
-    .action-btn-group .btn:hover {
-        transform: scale(1.05);
-    }
-    .upload-zone {
-        border: 2px dashed var(--calm-water-blue);
-        background: rgba(64, 107, 133, 0.02);
+
+    .btn-header-action {
+        background-color: var(--primary-dark);
+        color: white;
+        font-weight: 600;
+        padding: 0.6rem 1.5rem;
+        border-radius: 50px; /* Pill shape */
+        border: none;
         transition: all 0.3s;
     }
+
+    .btn-header-action:hover {
+        background-color: #0b3b5b;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(15, 76, 117, 0.3);
+    }
+
+    /* --- 2. Stats Cards Modern --- */
+    .stat-card {
+        border: none;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    /* --- 3. Table & Content --- */
+    .content-card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+
+    .table-modern thead th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #6c757d;
+        border-bottom: 2px solid #eee;
+        padding: 1rem;
+    }
+    
+    .table-modern tbody td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f2f2f2;
+    }
+
+    .table-modern tbody tr:hover {
+        background-color: #fcfcfc;
+    }
+
+    /* --- 4. Upload Zone --- */
+    .upload-zone {
+        border: 2px dashed #cbd5e0;
+        border-radius: 12px;
+        background: #f8fafc;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+    
     .upload-zone:hover {
-        border-color: var(--atmospheric-blue);
-        background: rgba(64, 107, 133, 0.05);
+        border-color: var(--primary-dark);
+        background: #f1f5f9;
     }
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="h3 mb-1 fw-bold" style="color: var(--calm-water-blue);">
-                        <i class="bi bi-database-fill-gear"></i> Backup & Restore
-                    </h1>
-                    <p class="text-muted mb-0">Kelola backup database dan file sistem</p>
+<div class="container-fluid py-4">
+
+    <!-- BAGIAN 1: HEADER (Sesuai Request Gambar) -->
+    <div class="card header-card border-0 mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <!-- Kiri: Icon & Judul -->
+                <div class="d-flex align-items-center gap-3">
+                    <div class="header-icon-wrapper">
+                        <i class="bi bi-database-fill-gear"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-1 fw-bold" style="color: var(--primary-dark);">Backup & Restore</h4>
+                        <p class="mb-0 text-muted">Kelola keamanan data sistem dan file dokumen</p>
+                    </div>
                 </div>
+                <!-- Kanan: Tombol -->
                 <div class="d-flex gap-2">
-                    <button class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#uploadBackupModal">
-                        <i class="bi bi-cloud-upload"></i> Upload Backup
+                    <button class="btn btn-outline-secondary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#uploadBackupModal">
+                        <i class="bi bi-cloud-upload me-1"></i> Upload
                     </button>
-                    <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#createBackupModal">
-                        <i class="bi bi-plus-circle"></i> Buat Backup Baru
+                    <button class="btn btn-header-action" data-bs-toggle="modal" data-bs-target="#createBackupModal">
+                        <i class="bi bi-plus-lg me-1"></i> Buat Backup Baru
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Statistik Database -->
-    <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm stat-card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0 rounded-3 p-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                            <i class="bi bi-person-fill-gear fs-2 text-white"></i>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <div class="text-muted small text-uppercase fw-semibold">Total Users</div>
-                            <div class="fs-3 fw-bold" style="color: var(--calm-water-blue);">{{ $stats['users'] }}</div>
-                            <small class="text-success">
-                                <i class="bi bi-check-circle-fill"></i> Aktif
-                            </small>
-                        </div>
+    <!-- BAGIAN 2: STATISTIK QUICK VIEW -->
+    <div class="row g-4 mb-4">
+        <!-- Card Database -->
+        <div class="col-md-4">
+            <div class="card stat-card h-100 p-3">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-primary bg-opacity-10 text-primary me-3">
+                        <i class="bi bi-hdd-stack"></i>
+                    </div>
+                    <div>
+                        <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">Database Size</small>
+                        <h5 class="mb-0 fw-bold">{{ $dbSize ?? '0 MB' }}</h5>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm stat-card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0 rounded-3 p-3" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                            <i class="bi bi-people-fill fs-2 text-white"></i>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <div class="text-muted small text-uppercase fw-semibold">Total Nasabah</div>
-                            <div class="fs-3 fw-bold" style="color: var(--calm-water-blue);">{{ number_format($stats['nasabah']) }}</div>
-                            <small class="text-info">
-                                <i class="bi bi-database-fill"></i> Records
-                            </small>
-                        </div>
+        <!-- Card Files -->
+        <div class="col-md-4">
+            <div class="card stat-card h-100 p-3">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-success bg-opacity-10 text-success me-3">
+                        <i class="bi bi-folder2-open"></i>
+                    </div>
+                    <div>
+                        <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">File Documents</small>
+                        <h5 class="mb-0 fw-bold">{{ $fileSize ?? '0 MB' }}</h5>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm stat-card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0 rounded-3 p-3" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                            <i class="bi bi-file-earmark-text-fill fs-2 text-white"></i>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <div class="text-muted small text-uppercase fw-semibold">Total Berita Acara</div>
-                            <div class="fs-3 fw-bold" style="color: var(--calm-water-blue);">{{ number_format($stats['berita_acara']) }}</div>
-                            <small class="text-warning">
-                                <i class="bi bi-file-pdf-fill"></i> Documents
-                            </small>
-                        </div>
+        <!-- Card Last Backup -->
+        <div class="col-md-4">
+            <div class="card stat-card h-100 p-3">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-warning bg-opacity-10 text-warning me-3">
+                        <i class="bi bi-clock-history"></i>
                     </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm stat-card h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0 rounded-3 p-3" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-                            <i class="bi bi-bell-fill fs-2 text-white"></i>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <div class="text-muted small text-uppercase fw-semibold">Total Notifikasi</div>
-                            <div class="fs-3 fw-bold" style="color: var(--calm-water-blue);">{{ number_format($stats['notifications']) }}</div>
-                            <small class="text-secondary">
-                                <i class="bi bi-chat-dots-fill"></i> Messages
-                            </small>
-                        </div>
+                    <div>
+                        <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">Last Backup</small>
+                        <h5 class="mb-0 fw-bold">{{ $lastBackupDate ?? '-' }}</h5>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Daftar Backup -->
-    <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white border-bottom py-3">
-            <div class="d-flex align-items-center">
-                <i class="bi bi-archive-fill fs-4 me-2" style="color: var(--calm-water-blue);"></i>
-                <h5 class="mb-0 fw-bold">Daftar Backup Tersedia</h5>
-                @if(count($backups) > 0)
-                <span class="badge bg-primary ms-auto">{{ count($backups) }} File</span>
-                @endif
-            </div>
+    <!-- BAGIAN 3: TABEL DAFTAR BACKUP -->
+    <div class="card content-card">
+        <div class="card-header bg-white border-0 py-3 px-4">
+            <h5 class="fw-bold mb-0" style="color: var(--primary-dark);">Riwayat Backup Tersedia</h5>
         </div>
-        <div class="card-body p-0">
-            @if(count($backups) > 0)
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0 backup-table">
-                        <thead style="background: linear-gradient(135deg, var(--calm-water-blue), var(--calm-water-blue-dark)); color: white;">
-                            <tr>
-                                <th width="5%" class="text-center">#</th>
-                                <th width="33%">
-                                    <i class="bi bi-file-earmark-zip me-1"></i> Nama File
-                                </th>
-                                <th width="12%">
-                                    <i class="bi bi-hdd me-1"></i> Ukuran
-                                </th>
-                                <th width="25%">
-                                    <i class="bi bi-calendar3 me-1"></i> Tanggal Dibuat
-                                </th>
-                                <th width="25%" class="text-center">
-                                    <i class="bi bi-gear-fill me-1"></i> Aksi
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($backups as $index => $backup)
-                            <tr>
-                                <td class="text-center">
-                                    <span class="badge rounded-circle bg-light text-dark border">{{ $index + 1 }}</span>
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-file-earmark-zip-fill fs-3 text-warning me-2"></i>
-                                        <div>
-                                            <div class="fw-semibold">{{ $backup['name'] }}</div>
-                                            <small class="text-muted">
-                                                <i class="bi bi-shield-check"></i> Backup Lengkap
-                                            </small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge bg-secondary bg-gradient px-3 py-2">
-                                        <i class="bi bi-hdd-fill me-1"></i> {{ $backup['size'] }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <div>
-                                        <div class="fw-semibold">
-                                            <i class="bi bi-calendar-check me-1 text-primary"></i>
-                                            {{ $backup['date']->format('d M Y') }}
-                                        </div>
-                                        <small class="text-muted">
-                                            <i class="bi bi-clock me-1"></i>
-                                            {{ $backup['date']->format('H:i:s') }} WIB
-                                        </small>
-                                        <br>
-                                        <small class="badge bg-info text-dark mt-1">
-                                            {{ $backup['date']->diffForHumans() }}
-                                        </small>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="d-flex justify-content-center gap-2 action-btn-group">
-                                        <a href="{{ route('backup.download', $backup['name']) }}" 
-                                           class="btn btn-sm btn-outline-primary" 
-                                           title="Download Backup"
-                                           data-bs-toggle="tooltip">
-                                            <i class="bi bi-download"></i> Download
-                                        </a>
-                                        <!-- Update Button Restore -->
-                                        <button type="button" 
-                                                class="btn btn-sm btn-outline-warning" 
-                                                onclick="openRestoreModal('{{ $backup['name'] }}')"
-                                                title="Restore dari Backup"
-                                                data-bs-toggle="tooltip">
-                                            <i class="bi bi-arrow-clockwise"></i> Restore
-                                        </button>
-                                        <!-- Update Button Delete -->
-                                        <button type="button" 
-                                                class="btn btn-sm btn-outline-danger" 
-                                                onclick="openDeleteModal('{{ $backup['name'] }}')"
-                                                title="Hapus Backup"
-                                                data-bs-toggle="tooltip">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <div class="text-center py-5">
-                    <div class="mb-4">
-                        <i class="bi bi-inbox fs-1 text-muted" style="font-size: 5rem; opacity: 0.2;"></i>
-                    </div>
-                    <h5 class="text-muted mb-2">Belum Ada Backup Tersedia</h5>
-                    <p class="text-muted mb-3">Pilih salah satu opsi di bawah untuk memulai</p>
-                    <div class="d-flex gap-2 justify-content-center">
-                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#uploadBackupModal">
-                            <i class="bi bi-cloud-upload"></i> Upload Backup
-                        </button>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createBackupModal">
-                            <i class="bi bi-plus-circle"></i> Buat Backup Baru
-                        </button>
-                    </div>
-                </div>
-            @endif
-        </div>
-    </div>
-
-    <!-- Informasi Penting -->
-    <div class="row mt-4">
-        <div class="col-lg-6 mb-3">
-            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #17a2b8 !important;">
-                <div class="card-body">
-                    <h5 class="card-title fw-bold text-info">
-                        <i class="bi bi-info-circle-fill"></i> Informasi Backup
-                    </h5>
-                    <ul class="mb-0 ps-3">
-                        <li class="mb-2">Backup mencakup <strong>semua data database</strong> (users, nasabah, berita acara, notifikasi)</li>
-                        <li class="mb-2">Backup juga menyertakan <strong>file tanda tangan (TTD)</strong> dan <strong>PDF Berita Acara</strong></li>
-                        <li class="mb-2">Format backup: <code>backup_YYYY-MM-DD_HHMMSS.zip</code></li>
-                        <li class="mb-2">File backup dapat di-<strong>download</strong> dan disimpan di tempat aman</li>
-                        <li>Proses mungkin memakan waktu beberapa menit tergantung ukuran data</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6 mb-3">
-            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #dc3545 !important;">
-                <div class="card-body">
-                    <h5 class="card-title fw-bold text-danger">
-                        <i class="bi bi-exclamation-triangle-fill"></i> Peringatan Restore
-                    </h5>
-                    <ul class="mb-0 ps-3">
-                        <li class="mb-2"><strong class="text-danger">PERINGATAN:</strong> Proses restore akan <u>menimpa semua data</u> yang ada saat ini!</li>
-                        <li class="mb-2">Pastikan <strong>backup terlebih dahulu</strong> sebelum restore</li>
-                        <li class="mb-2">Tidak ada tombol "undo" setelah restore dilakukan</li>
-                        <li class="mb-2">File upload maksimal <strong>500MB</strong></li>
-                        <li>Disarankan backup secara berkala (minimal <strong>1 minggu sekali</strong>)</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================ -->
-<!-- MODALS -->
-<!-- ============================================ -->
-
-<!-- Modal Upload Backup -->
-<div class="modal fade" id="uploadBackupModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header text-white" style="background: linear-gradient(135deg, #28a745, #20c997);">
-                <h5 class="modal-title fw-bold">
-                    <i class="bi bi-cloud-upload"></i> Upload File Backup
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ route('backup.upload') }}" method="POST" enctype="multipart/form-data" id="uploadBackupForm">
-                @csrf
-                <div class="modal-body">
-                    <div class="alert alert-info border-0 d-flex align-items-start">
-                        <i class="bi bi-info-circle-fill fs-4 me-3 mt-1"></i>
-                        <div>
-                            <strong>Catatan Penting:</strong>
-                            <ul class="mb-0 mt-2 ps-3">
-                                <li>File harus berformat <code>.zip</code></li>
-                                <li>Format nama: <code>backup_YYYY-MM-DD_HHMMSS.zip</code></li>
-                                <li>Ukuran maksimal: <strong>500MB</strong></li>
-                                <li>File backup harus dibuat dari sistem ini</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="upload-zone text-center p-4 rounded-3 mb-3">
-                        <i class="bi bi-cloud-arrow-up fs-1 text-primary mb-3 d-block"></i>
-                        <h6 class="fw-bold mb-2">Pilih File Backup</h6>
-                        <p class="text-muted small mb-3">Drag & drop atau klik untuk memilih file</p>
-                        <input type="file" 
-                               class="form-control" 
-                               name="backup_file" 
-                               id="backup_file" 
-                               accept=".zip"
-                               required>
-                    </div>
-
-                    <div id="fileInfo" class="alert alert-success border-0 d-none">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-file-earmark-zip-fill fs-3 me-3"></i>
-                            <div class="flex-grow-1">
-                                <div class="fw-bold" id="fileName">-</div>
-                                <small class="text-muted" id="fileSize">-</small>
+        
+        <div class="table-responsive">
+            <table class="table table-modern align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th width="5%" class="text-center">#</th>
+                        <th width="35%">Nama File Backup</th>
+                        <th width="15%">Ukuran</th>
+                        <th width="25%">Tanggal Dibuat</th>
+                        <th width="20%" class="text-end">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($backups as $index => $backup)
+                    <tr>
+                        <td class="text-center">{{ $index + 1 }}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-file-earmark-zip-fill text-warning fs-4 me-3"></i>
+                                <div>
+                                    <div class="fw-semibold text-dark">{{ $backup['name'] }}</div>
+                                    <small class="text-muted">Full Backup (DB + Files)</small>
+                                </div>
                             </div>
-                            <i class="bi bi-check-circle-fill text-success fs-4"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle"></i> Batal
-                    </button>
-                    <button type="submit" class="btn btn-success" id="uploadBtn" disabled>
-                        <i class="bi bi-cloud-upload"></i> Upload & Simpan
-                    </button>
-                </div>
-            </form>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border">{{ $backup['size'] }}</span>
+                        </td>
+                        <td>
+                            <div>
+                                <i class="bi bi-calendar2-week me-1 text-muted"></i> 
+                                {{ $backup['date']->format('d M Y') }}
+                                <small class="text-muted ms-1">({{ $backup['date']->format('H:i') }})</small>
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group shadow-sm" role="group">
+                                <a href="{{ route('backup.download', $backup['name']) }}" 
+                                   class="btn btn-sm btn-light text-primary" 
+                                   data-bs-toggle="tooltip" title="Download">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                                <button type="button" 
+                                        class="btn btn-sm btn-light text-warning" 
+                                        onclick="openRestoreModal('{{ $backup['name'] }}')"
+                                        data-bs-toggle="tooltip" title="Restore">
+                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                </button>
+                                <button type="button" 
+                                        class="btn btn-sm btn-light text-danger" 
+                                        onclick="openDeleteModal('{{ $backup['name'] }}')"
+                                        data-bs-toggle="tooltip" title="Hapus">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <div class="opacity-50 mb-3">
+                                <i class="bi bi-inbox fs-1"></i>
+                            </div>
+                            <h6 class="text-muted">Belum ada data backup</h6>
+                            <small>Silakan buat backup baru terlebih dahulu</small>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
-<!-- Modal Konfirmasi Buat Backup -->
+<!-- ============================================ -->
+<!-- MODALS SECTION -->
+<!-- ============================================ -->
+
+<!-- 1. Modal Buat Backup -->
 <div class="modal fade" id="createBackupModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header text-white" style="background: linear-gradient(135deg, var(--calm-water-blue), var(--calm-water-blue-dark));">
-                <h5 class="modal-title fw-bold">
-                    <i class="bi bi-plus-circle"></i> Buat Backup Baru
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Buat Backup Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form action="{{ route('backup.create') }}" method="POST" id="backupForm">
+            <form action="{{ route('backup.create') }}" method="POST" id="formCreate">
                 @csrf
-                <div class="modal-body">
-                    <div class="alert alert-warning border-0 d-flex align-items-start">
-                        <i class="bi bi-exclamation-triangle-fill fs-4 me-3 mt-1"></i>
-                        <div>
-                            <strong>Perhatian:</strong> Proses backup akan memakan waktu beberapa saat. Jangan tutup halaman ini sampai proses selesai.
+                <div class="modal-body text-center p-4">
+                    <div id="initialState">
+                        <div class="mb-4">
+                            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex p-3">
+                                <i class="bi bi-database-add text-primary display-5"></i>
+                            </div>
                         </div>
+                        <p class="text-muted mb-4">
+                            Proses ini akan mencadangkan seluruh <strong>Database</strong> dan <strong>File Dokumen</strong> ke dalam satu file ZIP.
+                        </p>
+                        <button type="submit" class="btn btn-header-action w-100 py-2">
+                            <i class="bi bi-play-circle me-2"></i>Mulai Proses Backup
+                        </button>
                     </div>
                     
-                    <div class="mb-3">
-                        <h6 class="fw-bold mb-2">
-                            <i class="bi bi-check2-square text-success"></i> Backup akan mencakup:
-                        </h6>
-                        <div class="list-group">
-                            <div class="list-group-item d-flex align-items-center">
-                                <i class="bi bi-database-fill text-primary me-3 fs-5"></i>
-                                <div>
-                                    <div class="fw-semibold">Semua Data Database</div>
-                                    <small class="text-muted">Users, Nasabah, Berita Acara, Notifications</small>
-                                </div>
-                            </div>
-                            <div class="list-group-item d-flex align-items-center">
-                                <i class="bi bi-pen-fill text-info me-3 fs-5"></i>
-                                <div>
-                                    <div class="fw-semibold">File Tanda Tangan (TTD)</div>
-                                    <small class="text-muted">Semua tanda tangan digital pengguna</small>
-                                </div>
-                            </div>
-                            <div class="list-group-item d-flex align-items-center">
-                                <i class="bi bi-file-pdf-fill text-danger me-3 fs-5"></i>
-                                <div>
-                                    <div class="fw-semibold">File PDF Berita Acara</div>
-                                    <small class="text-muted">Semua dokumen BA yang sudah dibuat</small>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Loading State (Hidden by default) -->
+                    <div id="loadingState" class="d-none py-3">
+                        <div class="spinner-border text-primary mb-3" role="status"></div>
+                        <h6 class="fw-bold">Sedang Memproses...</h6>
+                        <p class="small text-muted">Mohon jangan tutup halaman ini.</p>
                     </div>
-
-                    <div class="alert alert-info border-0 mb-0">
-                        <small>
-                            <i class="bi bi-clock-history me-1"></i> 
-                            File backup akan disimpan dengan nama: 
-                            <strong class="text-primary">backup_{{ date('Y-m-d_His') }}.zip</strong>
-                        </small>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle"></i> Batal
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle"></i> Ya, Buat Backup Sekarang
-                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Modal Konfirmasi Restore (NEW) -->
-<div class="modal fade" id="restoreBackupModal" tabindex="-1" aria-hidden="true">
+<!-- 2. Modal Upload Backup -->
+<div class="modal fade" id="uploadBackupModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header text-white" style="background: linear-gradient(135deg, #ffc107, #fd7e14);">
-                <h5 class="modal-title fw-bold text-dark">
-                    <i class="bi bi-exclamation-triangle-fill"></i> Konfirmasi Restore
-                </h5>
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Upload File Backup</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form id="restoreFormModal" method="POST">
+            <form action="{{ route('backup.upload') }}" method="POST" enctype="multipart/form-data" id="formUpload">
                 @csrf
-                <div class="modal-body text-center p-4">
-                    <div class="mb-3">
-                        <i class="bi bi-arrow-counterclockwise text-warning display-1"></i>
+                <div class="modal-body pt-0">
+                    <div class="upload-zone text-center p-4 mb-3 position-relative">
+                        <input type="file" name="backup_file" id="backupInput" class="position-absolute top-0 start-0 w-100 h-100 opacity-0" style="cursor: pointer;" accept=".zip" required>
+                        <i class="bi bi-cloud-arrow-up display-6 text-muted mb-2"></i>
+                        <h6 class="fw-bold mb-1">Klik atau Drop file disini</h6>
+                        <p class="small text-muted mb-0" id="fileNameDisplay">Format .zip (Max 500MB)</p>
                     </div>
-                    <h5 class="fw-bold text-danger">PERINGATAN PENTING!</h5>
-                    <p class="mb-3">Anda akan melakukan restore data menggunakan file:</p>
+                    <div class="alert alert-warning border-0 d-flex align-items-center small p-2">
+                        <i class="bi bi-exclamation-circle me-2 fs-5"></i>
+                        <div>Pastikan file backup berasal dari sistem yang sama.</div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-4">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Modal Konfirmasi Restore -->
+<div class="modal fade" id="restoreModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-top: 5px solid #ffc107 !important;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-dark">Konfirmasi Restore</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="restoreForm" method="POST">
+                @csrf
+                <div class="modal-body p-4">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-exclamation-triangle text-warning display-3 mb-2"></i>
+                        <h5 class="fw-bold text-danger">PERINGATAN KERAS!</h5>
+                        <p class="text-muted small">Anda akan mengembalikan sistem menggunakan file:</p>
+                        <div class="badge bg-light text-dark border p-2 fs-6" id="restoreFileName">filename.zip</div>
+                    </div>
                     
-                    <div class="alert alert-warning border-0 fw-bold shadow-sm">
-                        <i class="bi bi-file-earmark-zip-fill"></i> <span id="restoreFileName">filename.zip</span>
+                    <div class="alert alert-danger border-0 small">
+                        <ul class="mb-0 ps-3">
+                            <li>Data saat ini akan <strong>DIHAPUS & DITIMPA</strong>.</li>
+                            <li>Tindakan ini <strong>TIDAK DAPAT DIBATALKAN</strong>.</li>
+                        </ul>
                     </div>
 
-                    <ul class="text-start text-muted small bg-light p-3 rounded list-unstyled border">
-                        <li class="mb-2"><i class="bi bi-dot"></i> Tindakan ini akan <strong>MENIMPA/MENGHAPUS</strong> seluruh data saat ini.</li>
-                        <li class="mb-2"><i class="bi bi-dot"></i> Data akan digantikan dengan data dari backup.</li>
-                        <li><i class="bi bi-dot"></i> <strong>Tindakan ini tidak dapat dibatalkan!</strong></li>
-                    </ul>
-                    
-                    <div class="form-check text-start d-inline-block mt-2">
-                        <input class="form-check-input" type="checkbox" id="confirmRestoreCheck" required>
-                        <label class="form-check-label small" for="confirmRestoreCheck">
-                            Saya mengerti risikonya dan ingin melanjutkan.
+                    <div class="form-check bg-light p-3 rounded border">
+                        <input class="form-check-input" type="checkbox" id="confirmRestoreCheck">
+                        <label class="form-check-label fw-semibold small" for="confirmRestoreCheck">
+                            Saya mengerti resikonya dan ingin melanjutkan restore.
                         </label>
                     </div>
                 </div>
-                <div class="modal-footer bg-light justify-content-center">
-                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-warning px-4 fw-bold" id="btnSubmitRestore" disabled>
-                        <i class="bi bi-arrow-clockwise"></i> Ya, Restore Sekarang
+                <div class="modal-footer border-0 justify-content-center">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-warning fw-bold px-4" id="btnSubmitRestore" disabled>
+                        <i class="bi bi-arrow-counterclockwise"></i> Ya, Restore Sekarang
                     </button>
                 </div>
             </form>
@@ -476,34 +392,24 @@
     </div>
 </div>
 
-<!-- Modal Konfirmasi Hapus (NEW) -->
-<div class="modal fade" id="deleteBackupModal" tabindex="-1" aria-hidden="true">
+<!-- 4. Modal Hapus -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-sm">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title fw-bold">
-                    <i class="bi bi-trash-fill"></i> Hapus Backup
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="deleteFormModal" method="POST">
-                @csrf
-                @method('DELETE')
-                <div class="modal-body text-center p-4">
-                    <div class="mb-3">
-                        <i class="bi bi-trash3 text-danger" style="font-size: 4rem;"></i>
+        <div class="modal-content border-0 shadow">
+            <div class="modal-body text-center p-4">
+                <i class="bi bi-trash3 text-danger display-4 mb-3"></i>
+                <h5 class="fw-bold">Hapus File?</h5>
+                <p class="text-muted small mb-4">File backup ini akan dihapus permanen.</p>
+                
+                <form id="deleteForm" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <div class="d-flex justify-content-center gap-2">
+                        <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-danger btn-sm px-4">Hapus</button>
                     </div>
-                    <p class="mb-2">Apakah Anda yakin ingin menghapus file backup ini?</p>
-                    <div class="fw-bold text-dark mb-3" id="deleteFileName">filename.zip</div>
-                    <small class="text-muted d-block">File yang dihapus tidak dapat dikembalikan.</small>
-                </div>
-                <div class="modal-footer bg-light justify-content-center p-2">
-                    <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger btn-sm px-3">
-                        <i class="bi bi-trash"></i> Ya, Hapus
-                    </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 </div>
@@ -512,116 +418,48 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
     // Initialize Tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
+    // 1. Logic Modal Create (Loading)
+    document.getElementById('formCreate').addEventListener('submit', function() {
+        document.getElementById('initialState').classList.add('d-none');
+        document.getElementById('loadingState').classList.remove('d-none');
     });
 
-    // 1. Handle File Upload Validation
-    const fileInput = document.getElementById('backup_file');
-    const uploadBtn = document.getElementById('uploadBtn');
-    const fileInfo = document.getElementById('fileInfo');
-    const fileName = document.getElementById('fileName');
-    const fileSize = document.getElementById('fileSize');
-
-    if(fileInput) {
-        fileInput.addEventListener('change', function(e) {
-            if (this.files && this.files[0]) {
-                const file = this.files[0];
-                const validFormat = /^backup_\d{4}-\d{2}-\d{2}_\d{6}\.zip$/;
-                
-                // Validasi Nama
-                if (!validFormat.test(file.name)) {
-                    alert('❌ Format nama file tidak valid!\nHarus: backup_YYYY-MM-DD_HHMMSS.zip');
-                    this.value = '';
-                    uploadBtn.disabled = true;
-                    fileInfo.classList.add('d-none');
-                    return;
-                }
-
-                // Validasi Size (500MB)
-                if (file.size > 500 * 1024 * 1024) {
-                    alert('❌ Ukuran file terlalu besar (Max 500MB)!');
-                    this.value = '';
-                    uploadBtn.disabled = true;
-                    fileInfo.classList.add('d-none');
-                    return;
-                }
-
-                fileName.textContent = file.name;
-                fileSize.textContent = formatBytes(file.size);
-                fileInfo.classList.remove('d-none');
-                uploadBtn.disabled = false;
-            }
-        });
-    }
-
-    // 2. Handle Restore Checkbox Logic
-    const confirmCheck = document.getElementById('confirmRestoreCheck');
-    const btnRestore = document.getElementById('btnSubmitRestore');
-    if(confirmCheck) {
-        confirmCheck.addEventListener('change', function() {
-            btnRestore.disabled = !this.checked;
-        });
-    }
-
-    // 3. Loading Indicator for all Forms
-    const forms = document.querySelectorAll('form');
-    forms.forEach(form => {
-        form.addEventListener('submit', function() {
-            // Tampilkan loader jika ada elemen pageLoader di main layout
-            const pageLoader = document.getElementById('pageLoader');
-            if (pageLoader) pageLoader.style.display = 'flex';
-            
-            // Disable tombol submit agar tidak double submit & ubah text
-            const btn = this.querySelector('button[type="submit"]');
-            if(btn) {
-                const originalText = btn.innerHTML;
-                btn.disabled = true;
-                btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memproses...';
-            }
-        });
+    // 2. Logic Modal Upload (File Name)
+    document.getElementById('backupInput').addEventListener('change', function(e) {
+        if(this.files && this.files[0]) {
+            document.getElementById('fileNameDisplay').innerHTML = 
+                '<span class="text-success fw-bold"><i class="bi bi-check-circle"></i> ' + this.files[0].name + '</span>';
+        }
     });
-});
 
-// Fungsi Membuka Modal Restore
-function openRestoreModal(filename) {
-    // Set Action URL Form
-    const form = document.getElementById('restoreFormModal');
-    form.action = `/backup/restore/${filename}`;
-    
-    // Set Nama File di Teks
-    document.getElementById('restoreFileName').textContent = filename;
-    
-    // Reset Checkbox & Tombol
-    document.getElementById('confirmRestoreCheck').checked = false;
-    document.getElementById('btnSubmitRestore').disabled = true;
-    
-    // Buka Modal
-    new bootstrap.Modal(document.getElementById('restoreBackupModal')).show();
-}
+    // 3. Logic Modal Restore
+    function openRestoreModal(filename) {
+        var modal = new bootstrap.Modal(document.getElementById('restoreModal'));
+        document.getElementById('restoreFileName').innerText = filename;
+        document.getElementById('restoreForm').action = "/backup/restore/" + filename; // Sesuaikan route
+        
+        // Reset
+        document.getElementById('confirmRestoreCheck').checked = false;
+        document.getElementById('btnSubmitRestore').disabled = true;
+        
+        modal.show();
+    }
 
-// Fungsi Membuka Modal Delete
-function openDeleteModal(filename) {
-    // Set Action URL Form
-    const form = document.getElementById('deleteFormModal');
-    form.action = `/backup/delete/${filename}`;
-    
-    // Set Nama File
-    document.getElementById('deleteFileName').textContent = filename;
-    
-    // Buka Modal
-    new bootstrap.Modal(document.getElementById('deleteBackupModal')).show();
-}
+    document.getElementById('confirmRestoreCheck').addEventListener('change', function() {
+        document.getElementById('btnSubmitRestore').disabled = !this.checked;
+    });
 
-function formatBytes(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-}
+    // 4. Logic Modal Delete
+    function openDeleteModal(filename) {
+        var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        document.getElementById('deleteForm').action = "/backup/delete/" + filename; // Sesuaikan route
+        modal.show();
+    }
 </script>
 @endpush
